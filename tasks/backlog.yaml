@@ -1,18 +1,15 @@
 # backlog.yaml — Clawless Development Lifecycle SoT
 version: "2.0"
-
 metadata:
   project: clawless
   created_at: "2026-03-21"
-  last_sync: "2026-03-21T07:37:22Z"
-
+  last_sync: "2026-03-21T10:56:03Z"
 phases:
   - id: phase-1
     name: "Core Security Harness"
     start_date: "2026-03-21"
     target_date: "2026-04-30"
     status: in_progress
-
 milestones:
   - id: ms-001
     name: "全ドキュメント完成（Why + What + How 層）"
@@ -29,7 +26,6 @@ milestones:
     target_date: "2026-04-20"
     status: not_started
     phase: phase-1
-
 tasks:
   # ============================================================
   # ms-001: Documentation (done)
@@ -55,7 +51,6 @@ tasks:
     evidence: []
     depends_on: []
     tags: ["documentation", "why-layer"]
-
   - id: TASK-002
     intent: "THREAT_MODEL.md 作成"
     phase: phase-1
@@ -77,7 +72,6 @@ tasks:
     evidence: []
     depends_on: []
     tags: ["documentation", "why-layer"]
-
   - id: TASK-003
     intent: "ARCHITECTURE.md 作成"
     phase: phase-1
@@ -99,7 +93,6 @@ tasks:
     evidence: []
     depends_on: []
     tags: ["documentation", "what-layer"]
-
   - id: TASK-004
     intent: "CLAUDE_MD_SPEC.md 作成"
     phase: phase-1
@@ -121,7 +114,6 @@ tasks:
     evidence: []
     depends_on: []
     tags: ["documentation", "what-layer"]
-
   - id: TASK-005
     intent: "DETAILED_DESIGN.md 作成"
     phase: phase-1
@@ -143,7 +135,6 @@ tasks:
     evidence: []
     depends_on: []
     tags: ["documentation", "how-layer"]
-
   - id: TASK-006
     intent: "ADR 設計提案 作成（35 ADR）"
     phase: phase-1
@@ -165,7 +156,6 @@ tasks:
     evidence: []
     depends_on: []
     tags: ["documentation", "reference"]
-
   # ============================================================
   # ms-002: ADR Implementation (in_progress / backlog)
   # ============================================================
@@ -175,20 +165,31 @@ tasks:
     milestone: ms-002
     assignee: claude-code
     priority: must
-    status: in_progress
+    status: done
     branch: "feature/TASK-007"
-    pr_url: null
+    pr_url: https://github.com/Sora-bluesky/clawless/pull/1
     start_date: "2026-03-21"
     due_date: "2026-03-22"
-    completed_date: null
-    stage_status: stg0
+    completed_date: "2026-03-21"
+    stage_status: stg6_passed
     stg_history:
       - gate: stg0
-        passed_at: "2026-03-21T16:00:00Z"
+        passed_at: "2026-03-21T07:00:00Z"
+      - gate: stg1
+        passed_at: "2026-03-21T07:30:00Z"
+      - gate: stg2
+        passed_at: "2026-03-21T08:00:00Z"
+      - gate: stg3
+        passed_at: "2026-03-21T08:30:00Z"
+      - gate: stg4
+        passed_at: "2026-03-21T09:00:00Z"
+      - gate: stg5
+        passed_at: "2026-03-21T09:30:00Z"
+      - gate: stg6
+        passed_at: "2026-03-21T10:00:00Z"
     evidence: []
     depends_on: []
     tags: ["implementation", "phase-a"]
-
   - id: TASK-008
     intent: "ADR-031 STG パイプライン実装"
     phase: phase-1
@@ -206,7 +207,6 @@ tasks:
     evidence: []
     depends_on: ["TASK-007"]
     tags: ["implementation", "phase-b"]
-
   - id: TASK-009
     intent: "ADR-032 承認レスモード実装"
     phase: phase-1
@@ -224,7 +224,6 @@ tasks:
     evidence: []
     depends_on: []
     tags: ["implementation", "phase-b"]
-
   - id: TASK-010
     intent: "ADR-034 自律タスクループ実装"
     phase: phase-1
@@ -242,7 +241,6 @@ tasks:
     evidence: []
     depends_on: ["TASK-008", "TASK-007"]
     tags: ["implementation", "phase-c"]
-
   - id: TASK-011
     intent: "ADR-035 バイリンガルドキュメント実装"
     phase: phase-1
@@ -260,7 +258,6 @@ tasks:
     evidence: []
     depends_on: []
     tags: ["implementation", "phase-b"]
-
   # ============================================================
   # ms-003: Hook Scripts (backlog)
   # ============================================================
@@ -281,7 +278,6 @@ tasks:
     evidence: []
     depends_on: ["TASK-008"]
     tags: ["implementation", "hooks"]
-
   - id: TASK-013
     intent: "リリースタグ自動化（STG5/STG6 セマンティックバージョニング）"
     phase: phase-1
@@ -299,3 +295,44 @@ tasks:
     evidence: []
     depends_on: ["TASK-008"]
     tags: ["implementation", "phase-b", "release"]
+  - id: TASK-014
+    intent: tobari 完全削除 + settings.json 製品版移行
+    phase: phase-1
+    milestone: ms-003
+    assignee: claude-code
+    priority: must
+    status: backlog
+    branch: null
+    pr_url: null
+    start_date: null
+    due_date: null
+    completed_date: null
+    stage_status: null
+    stg_history: []
+    evidence: []
+    depends_on:
+      - TASK-012
+    tags:
+      - implementation
+      - phase-c
+      - migration
+  - id: TASK-015
+    intent: チャンネル連携アーキテクチャ設計（DETAILED_DESIGN.md §8.8）
+    phase: phase-1
+    milestone: ms-002
+    assignee: claude-code
+    priority: should
+    status: backlog
+    branch: null
+    pr_url: null
+    start_date: null
+    due_date: null
+    completed_date: null
+    stage_status: null
+    stg_history: []
+    evidence: []
+    depends_on: []
+    tags:
+      - design
+      - phase-b
+      - channel
