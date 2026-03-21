@@ -1,0 +1,61 @@
+---
+title: Clawless 3層防御モデル（Defense Layers）
+---
+graph TB
+    subgraph Layer3["Defense Layer 3: OS Sandbox<br/>(WSL2 / Linux only)"]
+        direction LR
+        SB_FS["Filesystem Isolation<br/>allowWrite / denyRead"]
+        SB_NET["Network Isolation<br/>allowedDomains (proxy)"]
+        SB_PROC["Process Isolation<br/>bubblewrap"]
+    end
+
+    subgraph Layer2["Defense Layer 2: Hook Chain<br/>(Windows / WSL2 / Linux — bash + jq)"]
+        direction TB
+        subgraph PreHooks["PreToolUse Hooks"]
+            H_PERM["clawless-permission.sh<br/>4-category classification"]
+            H_INJ["clawless-injection-guard.sh<br/>9 categories / 50+ patterns"]
+            H_EVASION["clawless-evasion-guard.sh<br/>7 attack vectors"]
+            H_TOKEN["clawless-quiet-inject.sh<br/>Token optimization"]
+            H_DATA["clawless-data-boundary.sh<br/>Jurisdiction check"]
+        end
+        subgraph PostHooks["PostToolUse Hooks"]
+            H_EVIDENCE["clawless-evidence.sh<br/>SHA-256 hash chain"]
+            H_EXFIL["clawless-exfil-guard.sh<br/>Data leak detection"]
+            H_DEPAUTO["clawless-dep-audit.sh<br/>Dependency scan"]
+        end
+        subgraph LifecycleHooks["Lifecycle Hooks"]
+            H_SESSION["clawless-session-start.sh<br/>Gate + env + version"]
+            H_COMPACT["clawless-compact.sh<br/>State backup/restore"]
+            H_STOP["clawless-circuit-breaker.sh<br/>Retry control"]
+            H_CONFIG["clawless-config-guard.sh<br/>Self-protection"]
+        end
+    end
+
+    subgraph Layer1["Defense Layer 1: Permissions<br/>(Windows / WSL2 / Linux — settings.json)"]
+        direction LR
+        P_DENY["permissions.deny<br/>Bash(rm -rf /), Edit(.env),<br/>Write(.claude/**), ..."]
+        P_ASK["permissions.ask<br/>Bash(git push), Bash(npm publish),<br/>MCP server approval"]
+        P_ALLOW["permissions.allow<br/>Read(**), Bash(git status),<br/>Bash(npm test)"]
+    end
+
+    User["User via VS Code<br/>Claude Code Extension"]
+    CC["Claude Code Agent"]
+
+    User -->|"prompt"| CC
+    CC -->|"tool call"| Layer1
+    Layer1 -->|"if allowed"| Layer2
+    Layer2 -->|"if passed"| Layer3
+    Layer3 -->|"execute"| OS["OS / File System / Network"]
+
+    Layer1 -.->|"❌ deny → block"| CC
+    Layer2 -.->|"❌ hook reject → block"| CC
+    Layer3 -.->|"❌ sandbox deny → block"| CC
+
+    style Layer3 fill:#ff634720,stroke:#ff6347,stroke-width:2px
+    style Layer2 fill:#ffa50020,stroke:#ffa500,stroke-width:2px
+    style Layer1 fill:#32cd3220,stroke:#32cd32,stroke-width:2px
+    style User fill:#4169e1,color:#fff,stroke:#4169e1
+    style CC fill:#6a5acd,color:#fff,stroke:#6a5acd
+
+    classDef hookNode fill:#fff3e0,stroke:#e65100,stroke-width:1px
+    class H_PERM,H_INJ,H_EVASION,H_TOKEN,H_DATA,H_EVIDENCE,H_EXFIL,H_DEPAUTO,H_SESSION,H_COMPACT,H_STOP,H_CONFIG hookNode
