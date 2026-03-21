@@ -1,0 +1,13 @@
+# Auto detect text files and normalize line endings
+* text=auto
+
+# Shell scripts must use LF (bash compatibility)
+*.sh text eol=lf
+
+# Hook scripts in Git Bash
+*.bash text eol=lf
+
+# Keep binary files as-is
+*.png binary
+*.jpg binary
+*.ico binary
