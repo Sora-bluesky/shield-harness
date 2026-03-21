@@ -69,14 +69,3 @@ handoff.md
 # Operational artifacts（運用アーティファクト）
 *-INSTRUCTIONS.md
 *-INSTRUCTIONS-*.md
-
-# Internal development artifacts（エンドユーザー不要）
-docs/
-tasks/
-scripts/
-.claude/skills/
-.claude/agents/
-.claude/commands/
-.claude/rules/
-.claude/plans/
-.claude/hooks/lint-on-save.js
