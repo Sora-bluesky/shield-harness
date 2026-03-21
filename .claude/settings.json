@@ -1,0 +1,295 @@
+{
+  "$schema": "https://json.schemastore.org/claude-code-settings.json",
+  "language": "japanese",
+  "effortLevel": "high",
+  "fastMode": false,
+  "alwaysThinkingEnabled": true,
+  "hooks": {
+    "SessionStart": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node \"$CLAUDE_PROJECT_DIR/.claude/hooks/tobari-session-start.js\"",
+            "timeout": 5
+          }
+        ]
+      }
+    ],
+    "PreToolUse": [
+      {
+        "matcher": "Edit|Write|NotebookEdit|Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node \"$CLAUDE_PROJECT_DIR/.claude/hooks/tobari-gate.js\"",
+            "timeout": 10
+          }
+        ]
+      }
+    ],
+    "PermissionRequest": [
+      {
+        "matcher": ".*",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node \"$CLAUDE_PROJECT_DIR/.claude/hooks/tobari-permission.js\"",
+            "timeout": 10
+          }
+        ]
+      }
+    ],
+    "TeammateIdle": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node \"$CLAUDE_PROJECT_DIR/.claude/hooks/tobari-teammate-idle.js\"",
+            "timeout": 5
+          }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node \"$CLAUDE_PROJECT_DIR/.claude/hooks/tobari-stop.js\"",
+            "timeout": 30
+          }
+        ]
+      }
+    ],
+    "InstructionsLoaded": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node \"$CLAUDE_PROJECT_DIR/.claude/hooks/tobari-instructions.js\"",
+            "timeout": 5
+          }
+        ]
+      }
+    ],
+    "ConfigChange": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node \"$CLAUDE_PROJECT_DIR/.claude/hooks/tobari-config-change.js\"",
+            "timeout": 5
+          }
+        ]
+      }
+    ],
+    "TaskCompleted": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node \"$CLAUDE_PROJECT_DIR/.claude/hooks/tobari-task-completed.js\"",
+            "timeout": 5
+          }
+        ]
+      }
+    ],
+    "SubagentStart": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node \"$CLAUDE_PROJECT_DIR/.claude/hooks/tobari-subagent-start.js\"",
+            "timeout": 5
+          }
+        ]
+      }
+    ],
+    "UserPromptSubmit": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node \"$CLAUDE_PROJECT_DIR/.claude/hooks/tobari-user-prompt.js\"",
+            "timeout": 5
+          }
+        ]
+      }
+    ],
+    "PreCompact": [
+      {
+        "matcher": "auto",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node \"$CLAUDE_PROJECT_DIR/.claude/hooks/tobari-precompact.js\"",
+            "timeout": 5
+          }
+        ]
+      }
+    ],
+    "PostCompact": [
+      {
+        "matcher": "auto",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node \"$CLAUDE_PROJECT_DIR/.claude/hooks/tobari-postcompact.js\"",
+            "timeout": 5
+          }
+        ]
+      }
+    ],
+    "SessionEnd": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node \"$CLAUDE_PROJECT_DIR/.claude/hooks/tobari-session-end.js\"",
+            "timeout": 5
+          }
+        ]
+      }
+    ],
+    "PostToolUseFailure": [
+      {
+        "matcher": "Bash|Edit|Write|NotebookEdit|Read|Grep|Glob|WebFetch|WebSearch|Task",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node \"$CLAUDE_PROJECT_DIR/.claude/hooks/tobari-evidence-failure.js\"",
+            "timeout": 5,
+            "async": true
+          }
+        ]
+      }
+    ],
+    "PostToolUse": [
+      {
+        "matcher": "Bash|Edit|Write|NotebookEdit|Read|Grep|Glob|WebFetch|WebSearch|Task",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node \"$CLAUDE_PROJECT_DIR/.claude/hooks/tobari-evidence.js\"",
+            "timeout": 5,
+            "async": true
+          }
+        ]
+      },
+      {
+        "matcher": "Edit|Write",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node \"$CLAUDE_PROJECT_DIR/.claude/hooks/lint-on-save.js\"",
+            "timeout": 30
+          }
+        ]
+      },
+      {
+        "matcher": "Bash|Edit|Write|NotebookEdit|Read|Grep|Glob|WebFetch|WebSearch|Task",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node \"$CLAUDE_PROJECT_DIR/.claude/hooks/tobari-cost.js\"",
+            "timeout": 5,
+            "async": true
+          }
+        ]
+      },
+      {
+        "matcher": "Bash|Read|Grep|Glob|WebFetch|WebSearch",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node \"$CLAUDE_PROJECT_DIR/.claude/hooks/tobari-injection-guard.js\"",
+            "timeout": 5
+          }
+        ]
+      }
+    ]
+  },
+  "permissions": {
+    "allow": [
+      "Read(*)",
+      "Edit(*)",
+      "Write(*)",
+      "Glob(*)",
+      "Grep(*)",
+      "WebFetch(*)",
+      "WebSearch(*)",
+      "Task(*)",
+      "Skill(*)",
+      "TodoWrite(*)",
+      "Bash(cat *)",
+      "Bash(ls *)",
+      "Bash(find *)",
+      "Bash(grep *)",
+      "Bash(head *)",
+      "Bash(tail *)",
+      "Bash(wc *)",
+      "Bash(sort *)",
+      "Bash(uniq *)",
+      "Bash(diff *)",
+      "Bash(echo *)",
+      "Bash(pwd *)",
+      "Bash(cd *)",
+      "Bash(mkdir *)",
+      "Bash(touch *)",
+      "Bash(cp *)",
+      "Bash(mv *)",
+      "Bash(chmod *)",
+      "Bash(git *)",
+      "Bash(gh *)",
+      "Bash(pwsh *)",
+      "Bash(powershell *)",
+      "Bash(python *)",
+      "Bash(python3 *)",
+      "Bash(node *)",
+      "Bash(npm *)",
+      "Bash(npx *)",
+      "Bash(curl *)",
+      "Bash(wget *)",
+      "Bash(jq *)",
+      "Bash(sed *)",
+      "Bash(awk *)",
+      "Bash(xargs *)",
+      "Bash(tree *)",
+      "Bash(which *)",
+      "Bash(type *)",
+      "Bash(env *)",
+      "Bash(export *)",
+      "Bash(source *)",
+      "Bash(docker *)",
+      "Bash(docker-compose *)",
+      "Bash(for *)",
+      "Bash(do)",
+      "Bash(then)",
+      "Bash(else)",
+      "Bash(fi)",
+      "Bash(done)",
+      "Bash(true)"
+    ],
+    "deny": [
+      "Read(./.env)",
+      "Read(./.env.*)",
+      "Read(./**/*.pem)",
+      "Read(./**/*.key)",
+      "Read(./**/credentials*)",
+      "Read(./**/*secret*)",
+      "Read(~/.ssh/**)",
+      "Read(~/.aws/**)",
+      "Read(~/.config/gcloud/**)",
+      "Bash(rm -rf /)",
+      "Bash(rm -rf ~)",
+      "Edit(tasks/backlog.yaml)",
+      "Write(tasks/backlog.yaml)"
+    ]
+  },
+  "env": {
+    "EDITOR": "code --wait",
+    "CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS": "1",
+    "CLAUDE_CODE_SUBAGENT_MODEL": "claude-opus-4-6"
+  }
+}
