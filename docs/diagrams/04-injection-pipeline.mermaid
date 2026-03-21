@@ -1,0 +1,47 @@
+---
+title: Clawless インジェクション防御パイプライン（Injection Defense Pipeline）
+---
+sequenceDiagram
+    participant Attacker as Attacker / Malicious Input
+    participant Stage1 as Stage 1: Input Scan<br/>(UserPromptSubmit)
+    participant Stage2 as Stage 2: Pattern Match<br/>(PreToolUse)
+    participant Stage3 as Stage 3: Output Guard<br/>(PostToolUse)
+    participant Evidence as Evidence Ledger
+
+    Note over Attacker: Attack vectors:<br/>• Prompt injection in user input<br/>• Indirect injection via file content<br/>• Tool-switching evasion<br/>• Unicode/homoglyph obfuscation<br/>• NTFS ADS / UNC path<br/>• CJK encoding attack
+
+    Attacker->>Stage1: Malicious prompt / file content
+    activate Stage1
+
+    Note over Stage1: UserPromptSubmit hook<br/>━━━━━━━━━━━━━━━━━━━━<br/>• Bypass pattern detection<br/>  ("ignore previous instructions")<br/>• Role hijack detection<br/>  ("you are now...")<br/>• System prompt extraction attempt
+
+    alt Bypass pattern detected
+        Stage1-->>Evidence: Log: { category: "bypass", severity: "high" }
+        Stage1-->>Attacker: ❌ BLOCKED at Stage 1
+    else Passes Stage 1
+        Stage1->>Stage2: Input forwarded
+        deactivate Stage1
+        activate Stage2
+
+        Note over Stage2: PreToolUse hook<br/>━━━━━━━━━━━━━━━━━━━━<br/>9 Categories × 50+ Patterns<br/>━━━━━━━━━━━━━━━━━━━━<br/>1. prompt-injection<br/>2. role-hijack<br/>3. data-exfiltration<br/>4. privilege-escalation<br/>5. encoding-attack<br/>6. path-traversal<br/>7. command-injection<br/>8. MCP-poisoning<br/>9. social-engineering<br/>━━━━━━━━━━━━━━━━━━━━<br/>+ NFKC normalization<br/>+ Zero-width char strip<br/>+ Homoglyph detection
+
+        alt Pattern match found
+            Stage2-->>Evidence: Log: { category, pattern_id, confidence }
+            Stage2-->>Attacker: ❌ BLOCKED at Stage 2
+        else Passes Stage 2
+            Stage2->>Stage3: Tool executes → output
+            deactivate Stage2
+            activate Stage3
+
+            Note over Stage3: PostToolUse hook<br/>━━━━━━━━━━━━━━━━━━━━<br/>• URL query string leak check<br/>• Credential pattern in output<br/>• Sensitive data exfiltration<br/>• Unexpected network activity
+
+            alt Exfil pattern detected
+                Stage3-->>Evidence: Log: { category: "exfil", data_type }
+                Stage3-->>Attacker: ⚠️ WARNING + context injected
+            else Clean output
+                Stage3->>Evidence: Log: { status: "clean" }
+                Stage3-->>Attacker: ✅ Output delivered
+            end
+            deactivate Stage3
+        end
+    end
