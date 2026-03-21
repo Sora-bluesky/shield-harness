@@ -49,6 +49,7 @@ dist
 .claude/hooks/tobari-*.js
 .claude/hooks/locales/
 .claude/hooks/tobari-hmac-key
+.claude/tobari-hmac-key
 # skills
 .claude/skills/tobari/
 .claude/skills/tobari-evolve/
@@ -78,3 +79,4 @@ scripts/
 .claude/commands/
 .claude/rules/
 .claude/plans/
+.claude/hooks/lint-on-save.js
