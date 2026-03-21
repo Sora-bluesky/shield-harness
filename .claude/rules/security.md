@@ -98,3 +98,12 @@ but it is prohibited for the reasons stated above.
 Alternative: When you need to remove already-committed files from tracking,
 consult the human (project owner) and determine the approach
 after confirming the impact scope.
+
+## Line Ending Management
+
+Line ending normalization is managed by `.gitattributes` only.
+Do not set `core.autocrlf=true` in this repository.
+
+When restoring files from old commits (`git checkout <commit> -- <path>`),
+always run `git add --renormalize .` afterward to re-apply `.gitattributes` rules.
+Otherwise, phantom diffs will appear in `git status` due to EOL mismatch.
