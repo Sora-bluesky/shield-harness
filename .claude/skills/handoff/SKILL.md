@@ -1,0 +1,104 @@
+---
+name: handoff
+description: セッション引き継ぎを実行し、HANDOFF.md を更新する
+---
+
+# /handoff — セッション引き継ぎ
+
+セッション終了時の引き継ぎ処理を実行する。
+
+## 手順
+
+### 0. 帳を上げる（veil が active な場合）
+
+帳がおりている（`tobari-session.json` の `active` が `true`）場合、
+セッション終了前に帳を正式に上げる。
+
+```bash
+python -c "
+import sys; sys.path.insert(0, '.claude/hooks')
+from tobari_session import finalize_session
+result = finalize_session('session handoff')
+print(f'Session {result[\"status\"]}: {result[\"reason\"]}')
+"
+```
+
+帳が active でない場合はこのステップをスキップする。
+
+### 1. セッション成果の収集
+
+以下を確認して今回のセッションの成果を把握する:
+
+```bash
+# 直近のコミット
+git log --oneline -20
+
+# 未コミットの変更
+git status
+
+# 変更差分
+git diff --stat
+```
+
+### 2. HANDOFF.md の更新
+
+`HANDOFF.md` を以下のフォーマットで更新する:
+
+```markdown
+# HANDOFF.md
+
+## セッション引き継ぎ要約
+
+- 引き継ぎ先は Claude Code を前提とする。
+
+## 今回完了
+
+- {完了タスク1}
+- {完了タスク2}
+
+## 未完了/保留
+
+- {保留タスク}: {理由/状態}
+
+## 次回の最優先3件
+
+1. {最優先タスク1}
+2. {次の優先タスク2}
+3. {次の優先タスク3}
+
+## 注意事項
+
+- {重要な注意点}
+- {未コミット変更の状態}
+```
+
+### 3. backlog.yaml との同期確認
+
+`tasks/backlog.yaml` の差分を確認し、
+引き継ぎに必要な判断事項を要約する。
+
+### 4. プロファイル更新
+
+セッション中に得られたユーザーの好み・判断基準があれば、
+`/profile-updater` スキルで永続化する。
+
+### 5. 学びの永続化
+
+セッション中に発見した再利用可能なパターンがあれば、
+自動メモリ（`~/.claude/projects/.../memory/`）に保存する。
+
+## 出力
+
+以下を報告する:
+
+1. **今回完了**: 完了タスクの箇条書き
+2. **未完了/保留**: 未完了項目と理由
+3. **次回の最優先3件**: 次セッションで最初に取り組むべきこと
+4. **注意事項**: 未コミット変更、ブロッカー、特記事項
+
+## Notes
+
+- HANDOFF.md の更新は Write ツールで直接行う
+- コミットはユーザーの明示指示がない限り行わない
+- 次回セッション開始時に HANDOFF.md を自動読み込みするため、
+  情報は簡潔かつ明確に記述すること
