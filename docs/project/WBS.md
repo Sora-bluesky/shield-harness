@@ -1,5 +1,5 @@
 <!-- auto-generated from backlog.yaml. DO NOT EDIT -->
-<!-- generated_at: 2026-03-21T07:37:22Z -->
+<!-- generated_at: 2026-03-21T10:56:03Z -->
 
 # Clawless WBS（作業分解構成）
 
@@ -16,12 +16,15 @@
 
 ### 🔄 プロジェクト基盤 ADR 実装完了
 
-- [ ] TASK-007: ADR-033 backlog.yaml + sync-project-views 実装
+- [x] TASK-007: ADR-033 backlog.yaml + sync-project-views 実装
 - [ ] TASK-008: ADR-031 STG パイプライン実装
 - [ ] TASK-009: ADR-032 承認レスモード実装
 - [ ] TASK-010: ADR-034 自律タスクループ実装
 - [ ] TASK-011: ADR-035 バイリンガルドキュメント実装
+- [ ] TASK-013: リリースタグ自動化（STG5/STG6 セマンティックバージョニング）
+- [ ] TASK-015: チャンネル連携アーキテクチャ設計（DETAILED_DESIGN.md §8.8）
 
 ### ⏳ 全フックスクリプト実装完了
 
 - [ ] TASK-012: 22 フックスクリプト群実装
+- [ ] TASK-014: tobari 完全削除 + settings.json 製品版移行

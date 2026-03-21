@@ -5,6 +5,20 @@
 Claude Code が安全・再現可能に開発を進めるためのハーネス。
 `.claude/` ディレクトリに展開される hooks + rules + skills + settings の総体。
 
+## システム要件
+
+| ツール       | バージョン   | 用途                                 | 必須/任意      |
+| ------------ | ------------ | ------------------------------------ | -------------- |
+| Git          | 2.x          | バージョン管理                       | 必須           |
+| Git Bash     | (Git 同梱)   | フックスクリプト実行環境             | 必須 (Windows) |
+| jq           | 1.6+         | フック内 JSON 処理                   | 必須           |
+| yq           | v4+ (Go版)   | backlog.yaml 操作                    | 必須           |
+| Node.js      | 18+          | NFKC 正規化 (不在時は fail-close)    | 必須           |
+| PowerShell 7 | 7.x (`pwsh`) | sync スクリプト (bash fallback あり) | 推奨           |
+| GitHub CLI   | 2.x (`gh`)   | PR 作成・マージ自動化                | 任意           |
+
+OS: Windows ネイティブファースト（Git Bash 環境）、WSL2/Linux 互換。
+
 ## セットアップ
 
 ```bash

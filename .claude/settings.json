@@ -91,6 +91,11 @@
             "type": "command",
             "command": "node \"$CLAUDE_PROJECT_DIR/.claude/hooks/tobari-task-completed.js\"",
             "timeout": 5
+          },
+          {
+            "type": "command",
+            "command": "bash \"$CLAUDE_PROJECT_DIR/.claude/hooks/clawless-pipeline.sh\"",
+            "timeout": 30
           }
         ]
       }

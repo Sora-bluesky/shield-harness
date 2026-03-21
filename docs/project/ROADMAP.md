@@ -1,13 +1,13 @@
 <!-- auto-generated from backlog.yaml. DO NOT EDIT -->
-<!-- generated_at: 2026-03-21T07:37:22Z -->
+<!-- generated_at: 2026-03-21T10:56:03Z -->
 
 # Clawless ロードマップ
 
-> 自動生成: 2026-03-21T07:37:22Z（backlog.yaml から生成。直接編集禁止）
+> 自動生成: 2026-03-21T10:56:03Z（backlog.yaml から生成。直接編集禁止）
 
 ## Core Security Harness
 
-期間: 2026-03-21 ～ 2026-04-30 | 進捗: 50%（6/12 タスク完了）
+期間: 2026-03-21 ～ 2026-04-30 | 進捗: 47%（7/15 タスク完了）
 
 ```mermaid
 timeline
@@ -25,21 +25,27 @@ timeline
         ADR-032 承認レスモード実装
         ADR-034 自律タスクループ実装
         ADR-035 バイリンガルドキュメント実装
+        リリースタグ自動化（STG5/STG6 セマンティックバージョニング）
+        チャンネル連携アーキテクチャ設計（DETAILED_DESIGN.md §8.8）
     section 全フックスクリプト実装完了
         22 フックスクリプト群実装
+        tobari 完全削除 + settings.json 製品版移行
 ```
 
-| ID       | タスク                                         | ステータス     | 担当        | 期限       |
-| -------- | ---------------------------------------------- | -------------- | ----------- | ---------- |
-| TASK-001 | REQUIREMENTS.md 作成                           | ✅ done        | claude-code | 2026-03-21 |
-| TASK-002 | THREAT_MODEL.md 作成                           | ✅ done        | claude-code | 2026-03-21 |
-| TASK-003 | ARCHITECTURE.md 作成                           | ✅ done        | claude-code | 2026-03-21 |
-| TASK-004 | CLAUDE_MD_SPEC.md 作成                         | ✅ done        | claude-code | 2026-03-21 |
-| TASK-005 | DETAILED_DESIGN.md 作成                        | ✅ done        | claude-code | 2026-03-21 |
-| TASK-006 | ADR 設計提案 作成（35 ADR）                    | ✅ done        | claude-code | 2026-03-21 |
-| TASK-007 | ADR-033 backlog.yaml + sync-project-views 実装 | 🔄 in_progress | claude-code | 2026-03-22 |
-| TASK-008 | ADR-031 STG パイプライン実装                   | ⏳ backlog     | claude-code | 2026-04-01 |
-| TASK-009 | ADR-032 承認レスモード実装                     | ⏳ backlog     | claude-code | -          |
-| TASK-010 | ADR-034 自律タスクループ実装                   | ⏳ backlog     | claude-code | -          |
-| TASK-011 | ADR-035 バイリンガルドキュメント実装           | ⏳ backlog     | claude-code | -          |
-| TASK-012 | 22 フックスクリプト群実装                      | ⏳ backlog     | claude-code | 2026-04-20 |
+| ID       | タスク                                                       | ステータス | 担当        | 期限       |
+| -------- | ------------------------------------------------------------ | ---------- | ----------- | ---------- |
+| TASK-001 | REQUIREMENTS.md 作成                                         | ✅ done    | claude-code | 2026-03-21 |
+| TASK-002 | THREAT_MODEL.md 作成                                         | ✅ done    | claude-code | 2026-03-21 |
+| TASK-003 | ARCHITECTURE.md 作成                                         | ✅ done    | claude-code | 2026-03-21 |
+| TASK-004 | CLAUDE_MD_SPEC.md 作成                                       | ✅ done    | claude-code | 2026-03-21 |
+| TASK-005 | DETAILED_DESIGN.md 作成                                      | ✅ done    | claude-code | 2026-03-21 |
+| TASK-006 | ADR 設計提案 作成（35 ADR）                                  | ✅ done    | claude-code | 2026-03-21 |
+| TASK-007 | ADR-033 backlog.yaml + sync-project-views 実装               | ✅ done    | claude-code | 2026-03-22 |
+| TASK-008 | ADR-031 STG パイプライン実装                                 | ⏳ backlog | claude-code | 2026-04-01 |
+| TASK-009 | ADR-032 承認レスモード実装                                   | ⏳ backlog | claude-code | -          |
+| TASK-010 | ADR-034 自律タスクループ実装                                 | ⏳ backlog | claude-code | -          |
+| TASK-011 | ADR-035 バイリンガルドキュメント実装                         | ⏳ backlog | claude-code | -          |
+| TASK-012 | 22 フックスクリプト群実装                                    | ⏳ backlog | claude-code | 2026-04-20 |
+| TASK-013 | リリースタグ自動化（STG5/STG6 セマンティックバージョニング） | ⏳ backlog | claude-code | -          |
+| TASK-014 | tobari 完全削除 + settings.json 製品版移行                   | ⏳ backlog | claude-code | -          |
+| TASK-015 | チャンネル連携アーキテクチャ設計（DETAILED_DESIGN.md §8.8）  | ⏳ backlog | claude-code | -          |
