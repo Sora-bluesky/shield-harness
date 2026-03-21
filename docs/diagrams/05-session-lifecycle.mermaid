@@ -1,0 +1,65 @@
+---
+title: Clawless Session Lifecycle
+---
+flowchart TD
+    Start(("Session Start")) --> GateCheck["gate-check.sh<br/>Gate validation"]
+    GateCheck -->|"pass"| EnvCheck["env-check.sh<br/>Environment check"]
+    GateCheck -->|"fail"| Abort["Session Aborted<br/>(fail-close)"]
+    EnvCheck -->|"pass"| VersionCheck["version-check.sh<br/>Claude Code version"]
+    EnvCheck -->|"fail"| Abort
+    VersionCheck -->|"compatible"| OpenClawCheck["openclaw-check.sh<br/>State verification"]
+    VersionCheck -->|"new version"| Warn["additionalContext<br/>Version warning injected"] --> OpenClawCheck
+    OpenClawCheck -->|"pass"| Idle(["Idle<br/>Waiting for tool call"])
+    OpenClawCheck -->|"fail"| Abort
+
+    Idle -->|"tool call"| Perm["Permission Check<br/>4-category classify"]
+    Perm --> Inj["Injection Scan<br/>50+ patterns"]
+    Inj --> Evasion["Evasion Check<br/>7 vectors"]
+    Evasion --> Token["Token Optimize<br/>quiet flags"]
+    Token --> DataB["Data Boundary<br/>jurisdiction"]
+
+    DataB -->|"all pass"| Exec["Tool Execution<br/>Bash / Edit / Write / ..."]
+    DataB -->|"block"| Blocked["Blocked"]
+
+    Blocked --> RetryCheck{"retries < 3?"}
+    RetryCheck -->|"yes"| Idle
+    RetryCheck -->|"no"| CircuitOpen["Circuit Open<br/>User notified"]
+
+    CircuitOpen -->|"user approves"| Idle
+    CircuitOpen -->|"user stops"| Term
+
+    Exec --> Evidence["Evidence Record<br/>SHA-256 hash chain"]
+    Evidence --> ExfilCheck["Exfil Guard<br/>leak detection"]
+    ExfilCheck --> DepAudit["Dep Audit<br/>if install detected"]
+    DepAudit --> Idle
+
+    Idle -->|"context pressure"| PreCompact["PreCompact<br/>Backup state"]
+    PreCompact --> Compact["Claude Code<br/>Compacts context"]
+    Compact --> PostCompact["PostCompact<br/>Restore + CLAUDE.md verify"]
+    PostCompact --> Idle
+
+    Idle -->|"user ends / stop"| Term["Final Evidence<br/>Session summary"]
+    Term --> Flush["Flush Ledger<br/>evidence-ledger.jsonl"]
+    Flush --> End(("Session End"))
+
+    style Start fill:#3b82f6,color:#fff,stroke:#3b82f6
+    style End fill:#3b82f6,color:#fff,stroke:#3b82f6
+    style Abort fill:#ef4444,color:#fff,stroke:#ef4444
+    style Blocked fill:#f97316,color:#fff,stroke:#f97316
+    style CircuitOpen fill:#ef4444,color:#fff,stroke:#ef4444
+    style Idle fill:#22c55e,color:#fff,stroke:#22c55e
+    style Exec fill:#a855f7,color:#fff,stroke:#a855f7
+
+    style Perm fill:#fff3e0,stroke:#e65100
+    style Inj fill:#fff3e0,stroke:#e65100
+    style Evasion fill:#fff3e0,stroke:#e65100
+    style Token fill:#fff3e0,stroke:#e65100
+    style DataB fill:#fff3e0,stroke:#e65100
+
+    style Evidence fill:#e8f5e9,stroke:#2e7d32
+    style ExfilCheck fill:#e8f5e9,stroke:#2e7d32
+    style DepAudit fill:#e8f5e9,stroke:#2e7d32
+
+    style PreCompact fill:#e3f2fd,stroke:#1565c0
+    style Compact fill:#e3f2fd,stroke:#1565c0
+    style PostCompact fill:#e3f2fd,stroke:#1565c0
