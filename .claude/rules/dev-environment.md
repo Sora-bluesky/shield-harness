@@ -29,8 +29,8 @@
 ## Important Commands
 
 ```powershell
-# Verify tobari setup
-pwsh ./scripts/verify-tobari-setup.ps1
+# Verify clawless setup
+pwsh ./scripts/verify-clawless-setup.ps1
 
 # Git guard (manual scan)
 bash .githooks/pre-commit
