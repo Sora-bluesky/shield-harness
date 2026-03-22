@@ -44,25 +44,11 @@ dist
 .env.*
 !.env.example
 
-# tobari — 開発加速用ツール（Clawless プロジェクト自体には含めない）
-# hooks
-.claude/hooks/tobari-*.js
+# Claude Code runtime (not project artifacts)
 .claude/hooks/locales/
-.claude/hooks/tobari-hmac-key
-.claude/tobari-hmac-key
-# skills
-.claude/skills/tobari/
-.claude/skills/tobari-evolve/
-.claude/skills/tobari-immune/
-# runtime state and logs
-.claude/tobari-session.json
-.claude/tobari-session.json.lock
-.claude/tobari-cost-state.json
-.claude/tobari-cost-state.json.lock
 .claude/logs/
 .claude/settings.local.json
 .claude/checkpoints/
-.tobari-version
 HANDOFF.md
 handoff.md
 HANDOFF-SESSION.md
