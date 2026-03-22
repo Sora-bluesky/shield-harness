@@ -1,6 +1,6 @@
 # Binding Governance Rules
 
-Binding is the governance control layer for tobari. It is NOT an LLM — it is a set of rules, gates, and contracts enforced by Claude Code (Orchestra).
+Binding is the governance control layer for clawless. It is NOT an LLM — it is a set of rules, gates, and contracts enforced by Claude Code (Orchestra).
 
 ## Operating Profiles
 
