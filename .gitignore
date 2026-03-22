@@ -37,6 +37,8 @@ dist
 # Clawless ランタイム（証跡・セッション状態）
 .clawless/logs/
 .clawless/state/
+.clawless/backup/
+.clawless/compact-backup/
 .clawless/session.json
 
 # 環境固有
