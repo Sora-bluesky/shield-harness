@@ -1,0 +1,137 @@
+{
+  "version": "1.0.0",
+  "categories": {
+    "direct_injection": {
+      "severity": "critical",
+      "description": "Direct prompt injection — bypass instructions embedded in user input (TH-02-1)",
+      "patterns": [
+        "ignore\\s+(all\\s+)?(previous|prior|above|earlier)\\s+(instructions|rules|guidelines|directives)",
+        "disregard\\s+(all\\s+)?(previous|prior|above)\\s+(instructions|rules)",
+        "forget\\s+(all\\s+)?(previous|prior|above)\\s+(instructions|rules|context)",
+        "override\\s+(all\\s+)?(safety|security|restrictions|rules|guidelines)",
+        "bypass\\s+(all\\s+)?(safety|security|restrictions|filters|rules)",
+        "you\\s+must\\s+(now\\s+)?ignore\\s+(all|any|every)",
+        "new\\s+instructions?:\\s",
+        "system\\s*:\\s*(you\\s+are|from\\s+now)"
+      ],
+      "action": "deny"
+    },
+    "indirect_injection": {
+      "severity": "critical",
+      "description": "Indirect prompt injection — instructions embedded in file content or MCP output (TH-02-2)",
+      "patterns": [
+        "\\[SYSTEM\\]",
+        "\\[INST\\]",
+        "<<SYS>>",
+        "<\\|im_start\\|>\\s*system",
+        "BEGIN\\s+HIDDEN\\s+(INSTRUCTIONS?|PROMPT)",
+        "IMPORTANT:\\s*ignore\\s+previous",
+        "AI\\s+INSTRUCTIONS?:\\s",
+        "ASSISTANT\\s+OVERRIDE:\\s"
+      ],
+      "action": "deny"
+    },
+    "role_hijack": {
+      "severity": "critical",
+      "description": "Role hijacking — persona/role override attempts (TH-02-3)",
+      "patterns": [
+        "you\\s+are\\s+(now|no\\s+longer)\\s+(a|an|the)?\\s*\\w+",
+        "act\\s+as\\s+(if\\s+you\\s+are\\s+)?(a|an)?\\s*(unrestricted|unfiltered|jailbroken|DAN)",
+        "pretend\\s+(you\\s+are|to\\s+be)\\s+(a|an)?\\s*(unrestricted|evil|malicious)",
+        "DAN\\s*(mode|prompt|jailbreak)?",
+        "Developer\\s+Mode\\s+(enabled|activated|on)",
+        "jailbreak(ed)?\\s*(mode|prompt)?",
+        "do\\s+anything\\s+now"
+      ],
+      "action": "deny"
+    },
+    "encoding_attack": {
+      "severity": "high",
+      "description": "Encoding/obfuscation attacks — base64, Unicode escape, homoglyph (TH-02-4)",
+      "patterns": [
+        "eval\\s*\\(\\s*atob\\s*\\(",
+        "Buffer\\.from\\s*\\([^)]+,\\s*['\"]base64['\"]\\)",
+        "\\\\u0{0,2}(7[0-9a-fA-F]|[89a-fA-F][0-9a-fA-F])",
+        "\\\\x[0-9a-fA-F]{2}\\\\x[0-9a-fA-F]{2}",
+        "String\\.fromCharCode\\s*\\(",
+        "\\u200[b-f]",
+        "\\u00ad",
+        "\\ufeff"
+      ],
+      "action": "deny"
+    },
+    "context_manipulation": {
+      "severity": "high",
+      "description": "Context manipulation — fake system messages, delimiter injection (TH-02-5)",
+      "patterns": [
+        "<system[_-]?(message|prompt|reminder)>",
+        "</?(system|assistant|user|human|ai)\\s*>",
+        "---\\s*(system|assistant)\\s*(message|response|output)\\s*---",
+        "\\*\\*\\*\\s*(SYSTEM|ADMIN|ROOT)\\s*(MESSAGE|OVERRIDE|COMMAND)\\s*\\*\\*\\*",
+        "={3,}\\s*(BEGIN|START)\\s*(SYSTEM|ADMIN|OVERRIDE)",
+        "<\\|endoftext\\|>",
+        "<\\|pad\\|>"
+      ],
+      "action": "deny"
+    },
+    "instruction_smuggling": {
+      "severity": "high",
+      "description": "Instruction smuggling — hidden instructions in HTML comments, markdown, etc (TH-02-6)",
+      "patterns": [
+        "<!--\\s*(ignore|override|bypass|system|instruction)",
+        "```\\s*(system|instruction|override|hidden)",
+        "\\[//\\]:\\s*#\\s*\\(",
+        "\\u200b.*\\u200b",
+        "%00",
+        "\\\\0{1,3}[0-7]"
+      ],
+      "action": "deny"
+    },
+    "zero_width": {
+      "severity": "high",
+      "description": "Zero-width character injection — invisible characters used to bypass pattern matching (TH-02-4)",
+      "patterns": [
+        "[\\u200b\\u200c\\u200d\\u200e\\u200f]",
+        "[\\u2028\\u2029]",
+        "[\\u2060\\u2061\\u2062\\u2063\\u2064]",
+        "[\\ufeff]",
+        "[\\u00ad]",
+        "[\\u034f]",
+        "[\\u115f\\u1160]"
+      ],
+      "action": "deny"
+    },
+    "data_exfiltration": {
+      "severity": "high",
+      "description": "Data exfiltration — sensitive data embedded in URLs or external requests (TH-02-7)",
+      "patterns": [
+        "curl\\s+.*(-d|--data|--data-raw|--data-binary)\\s+.*(@/etc/|@~/|@\\.env|@.*\\.pem|@.*\\.key)",
+        "wget\\s+.*--post-data=.*(\\.env|password|secret|token|api.?key)",
+        "curl\\s+.*\\?.*=(\\$[A-Z_]+|\\$\\{[A-Z_]+\\})",
+        "fetch\\s*\\(['\"]https?://[^'\"]+\\?[^'\"]*(?:key|token|secret|password|auth)=",
+        "\\|\\s*curl\\s+",
+        "\\|\\s*nc\\s+",
+        "\\|\\s*wget\\s+"
+      ],
+      "action": "deny"
+    },
+    "privilege_escalation": {
+      "severity": "medium",
+      "description": "Privilege escalation hints — attempts to gain elevated access or modify security controls",
+      "patterns": [
+        "sudo\\s+",
+        "chmod\\s+[0-7]*7[0-7]*\\s+",
+        "chown\\s+root",
+        "setuid",
+        "capabilities?\\s*=",
+        "security\\.yaml|security\\.json|security\\.toml"
+      ],
+      "action": "warn"
+    }
+  },
+  "metadata": {
+    "generated_at": "2026-03-22T12:00:00.000Z",
+    "pattern_count": 62,
+    "sha256": ""
+  }
+}
