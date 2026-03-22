@@ -45,7 +45,7 @@ function loadStoredConfig() {
     if (!fs.existsSync(CONFIG_HASH_FILE)) return null;
     const data = JSON.parse(fs.readFileSync(CONFIG_HASH_FILE, "utf8"));
     // Validate clawless format (deny_rules array required)
-    // Reject tobari-format snapshots (hash + snapshot_keys only)
+    // Reject legacy-format snapshots (hash + snapshot_keys only)
     if (!Array.isArray(data.deny_rules)) return null;
     return data;
   } catch {

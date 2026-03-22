@@ -74,7 +74,7 @@ Output:
 
 ## Notes
 
-- Uses `node:test` runner (tobari standard)
+- Uses `node:test` runner (clawless standard)
 - Test naming convention: `test_{subject}_{condition}_{expected_result}`
 - Run tests with: `node --test --test-concurrency=1 tests/`
 - This skill generates suggestions and skeletons -- actual implementation is manual or via `/tdd`
