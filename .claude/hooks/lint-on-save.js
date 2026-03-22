@@ -12,7 +12,7 @@
 
 const { execFileSync } = require("child_process");
 const path = require("path");
-const session = require("./tobari-session.js");
+const { readHookInput } = require("./lib/clawless-utils");
 
 // --- Constants ---
 
@@ -187,7 +187,7 @@ function lintPowershell(filePath, projectDir, relPath) {
  * @param {object} data - PostToolUse hook input
  */
 function handler(data) {
-  const toolInput = data.tool_input || {};
+  const toolInput = data.toolInput || data.tool_input || {};
   const filePath = toolInput.file_path;
 
   if (!filePath) return;
@@ -231,5 +231,10 @@ module.exports = {
 // --- Entry point ---
 
 if (require.main === module) {
-  session.runHook(handler);
+  try {
+    const input = readHookInput();
+    handler(input);
+  } catch (e) {
+    process.stderr.write(`[lint-on-save] Error: ${e.message}\n`);
+  }
 }
