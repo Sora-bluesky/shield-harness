@@ -1,0 +1,11 @@
+{
+  "allowed": ["JP", "US"],
+  "tld_map": {
+    ".jp": "JP",
+    ".us": "US",
+    ".de": "DE",
+    ".cn": "CN",
+    ".ru": "RU",
+    ".uk": "UK"
+  }
+}
