@@ -140,43 +140,47 @@ Phase C で全 22 フックを Node.js CommonJS に移行する。`.claude/hooks
 
 **移行による改善点**:
 
-| 項目 | bash+jq | Node.js |
-|------|---------|---------|
-| JSON パース | jq 外部依存 | `JSON.parse()` ネイティブ |
-| NFKC 正規化 | node サブプロセス呼出 | `String.normalize('NFKC')` ネイティブ |
-| SHA-256 | sha256sum/shasum フォールバック | `crypto.createHash()` ネイティブ |
-| パス正規化 | realpath/readlink フォールバック | `path.resolve()` ネイティブ |
-| YAML パース | yq (Go) 外部依存 | `js-yaml` npm パッケージ |
-| ファイルロック | flock → mkdir フォールバック | `fs.mkdirSync` ロックパターン |
-| Windows 互換 | 6 項目のフォールバック必要 | ネイティブ対応（フォールバック不要） |
+| 項目           | bash+jq                          | Node.js                               |
+| -------------- | -------------------------------- | ------------------------------------- |
+| JSON パース    | jq 外部依存                      | `JSON.parse()` ネイティブ             |
+| NFKC 正規化    | node サブプロセス呼出            | `String.normalize('NFKC')` ネイティブ |
+| SHA-256        | sha256sum/shasum フォールバック  | `crypto.createHash()` ネイティブ      |
+| パス正規化     | realpath/readlink フォールバック | `path.resolve()` ネイティブ           |
+| YAML パース    | yq (Go) 外部依存                 | `js-yaml` npm パッケージ              |
+| ファイルロック | flock → mkdir フォールバック     | `fs.mkdirSync` ロックパターン         |
+| Windows 互換   | 6 項目のフォールバック必要       | ネイティブ対応（フォールバック不要）  |
 
 ```javascript
 // clawless-utils.js — Shared utilities for all Clawless hooks (Node.js)
-'use strict';
+"use strict";
 
-const fs = require('fs');
-const path = require('path');
-const crypto = require('crypto');
+const fs = require("fs");
+const path = require("path");
+const crypto = require("crypto");
 
-const CLAWLESS_DIR = '.clawless';
-const EVIDENCE_FILE = path.join(CLAWLESS_DIR, 'logs', 'evidence-ledger.jsonl');
-const SESSION_FILE = path.join(CLAWLESS_DIR, 'session.json');
-const PATTERNS_FILE = path.join('.claude', 'patterns', 'injection-patterns.json');
+const CLAWLESS_DIR = ".clawless";
+const EVIDENCE_FILE = path.join(CLAWLESS_DIR, "logs", "evidence-ledger.jsonl");
+const SESSION_FILE = path.join(CLAWLESS_DIR, "session.json");
+const PATTERNS_FILE = path.join(
+  ".claude",
+  "patterns",
+  "injection-patterns.json",
+);
 
 /**
  * Read and parse hook input from stdin.
  * @returns {Object} { raw, hookType, toolName, toolInput, sessionId, timestamp }
  */
 function readHookInput() {
-  const raw = fs.readFileSync('/dev/stdin', 'utf8');
+  const raw = fs.readFileSync("/dev/stdin", "utf8");
   const input = JSON.parse(raw);
   return {
     raw,
-    hookType: input.hook_type || '',
-    toolName: input.tool_name || '',
+    hookType: input.hook_type || "",
+    toolName: input.tool_name || "",
     toolInput: input.tool_input || {},
-    sessionId: input.session_id || '',
-    timestamp: input.timestamp || '',
+    sessionId: input.session_id || "",
+    timestamp: input.timestamp || "",
   };
 }
 
@@ -188,7 +192,7 @@ function allow(context) {
   if (context) {
     process.stdout.write(JSON.stringify({ additionalContext: context }));
   } else {
-    process.stdout.write('{}');
+    process.stdout.write("{}");
   }
   process.exit(0);
 }
@@ -208,7 +212,7 @@ function deny(reason) {
  * @returns {string}
  */
 function nfkcNormalize(input) {
-  return input.normalize('NFKC');
+  return input.normalize("NFKC");
 }
 
 /**
@@ -217,7 +221,7 @@ function nfkcNormalize(input) {
  * @returns {string} hex digest
  */
 function sha256(input) {
-  return crypto.createHash('sha256').update(input).digest('hex');
+  return crypto.createHash("sha256").update(input).digest("hex");
 }
 
 /**
@@ -226,7 +230,7 @@ function sha256(input) {
  * @returns {string}
  */
 function normalizePath(filePath) {
-  return path.resolve(filePath.replace(/\\/g, '/'));
+  return path.resolve(filePath.replace(/\\/g, "/"));
 }
 
 /**
@@ -235,7 +239,7 @@ function normalizePath(filePath) {
  */
 function readSession() {
   try {
-    return JSON.parse(fs.readFileSync(SESSION_FILE, 'utf8'));
+    return JSON.parse(fs.readFileSync(SESSION_FILE, "utf8"));
   } catch {
     return {};
   }
@@ -258,8 +262,10 @@ function writeSession(data) {
 function appendEvidence(entry) {
   const dir = path.dirname(EVIDENCE_FILE);
   if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
-  fs.appendFileSync(EVIDENCE_FILE,
-    JSON.stringify({ ...entry, recorded_at: new Date().toISOString() }) + '\n');
+  fs.appendFileSync(
+    EVIDENCE_FILE,
+    JSON.stringify({ ...entry, recorded_at: new Date().toISOString() }) + "\n",
+  );
 }
 
 /**
@@ -268,14 +274,25 @@ function appendEvidence(entry) {
  * @returns {Object}
  */
 function readYaml(filePath) {
-  const yaml = require('js-yaml');
-  return yaml.load(fs.readFileSync(filePath, 'utf8'));
+  const yaml = require("js-yaml");
+  return yaml.load(fs.readFileSync(filePath, "utf8"));
 }
 
 module.exports = {
-  CLAWLESS_DIR, EVIDENCE_FILE, SESSION_FILE, PATTERNS_FILE,
-  readHookInput, allow, deny, nfkcNormalize, sha256,
-  normalizePath, readSession, writeSession, appendEvidence, readYaml,
+  CLAWLESS_DIR,
+  EVIDENCE_FILE,
+  SESSION_FILE,
+  PATTERNS_FILE,
+  readHookInput,
+  allow,
+  deny,
+  nfkcNormalize,
+  sha256,
+  normalizePath,
+  readSession,
+  writeSession,
+  appendEvidence,
+  readYaml,
 };
 ```
 
@@ -315,9 +332,9 @@ try-catch による fail-close。外部依存チェック不要（JSON.parse は
 ```javascript
 #!/usr/bin/env node
 // clawless-{name}.js — {description}
-'use strict';
+"use strict";
 
-const { readHookInput, allow, deny } = require('./lib/clawless-utils');
+const { readHookInput, allow, deny } = require("./lib/clawless-utils");
 
 try {
   const input = readHookInput();
@@ -327,9 +344,11 @@ try {
   allow();
 } catch (err) {
   // fail-close: any uncaught error = deny
-  process.stdout.write(JSON.stringify({
-    reason: `Hook error (clawless-{name}): ${err.message}`
-  }));
+  process.stdout.write(
+    JSON.stringify({
+      reason: `Hook error (clawless-{name}): ${err.message}`,
+    }),
+  );
   process.exit(2);
 }
 ```
@@ -1909,12 +1928,12 @@ settings.json の hooks セクションに追記:
 
 **責務**: `approval_free: true` 時に `permissions.ask` を排除し、全セキュリティ判定を hooks に委譲する。
 
-| 項目           | 値                                   |
-| -------------- | ------------------------------------ |
-| トリガー       | SessionStart                         |
-| 設定ソース     | pipeline-config.json `approval_free` |
-| 根拠 ADR       | ADR-032                              |
-| 独立性         | ADR-031（パイプライン）なしでも動作  |
+| 項目       | 値                                   |
+| ---------- | ------------------------------------ |
+| トリガー   | SessionStart                         |
+| 設定ソース | pipeline-config.json `approval_free` |
+| 根拠 ADR   | ADR-032                              |
+| 独立性     | ADR-031（パイプライン）なしでも動作  |
 
 #### セキュリティモデル
 
@@ -1929,20 +1948,20 @@ settings.json の hooks セクションに追記:
 
 #### ask ルールの hooks 対応表
 
-| 従来の ask ルール         | hooks による同等の防御                                 |
-|--------------------------|------------------------------------------------------|
-| `Bash(git push *)`       | clawless-gate が `--force` を deny                    |
-| `Edit(.claude/**)`       | permissions.deny + ConfigChange hook で 3 重防御       |
-| `Bash(npm install *)`    | clawless-dependency-guard が脆弱性スキャン            |
-| `Bash(npx *)`            | clawless-gate がコマンド検査                           |
+| 従来の ask ルール     | hooks による同等の防御                           |
+| --------------------- | ------------------------------------------------ |
+| `Bash(git push *)`    | clawless-gate が `--force` を deny               |
+| `Edit(.claude/**)`    | permissions.deny + ConfigChange hook で 3 重防御 |
+| `Bash(npm install *)` | clawless-dependency-guard が脆弱性スキャン       |
+| `Bash(npx *)`         | clawless-gate がコマンド検査                     |
 
 #### プロファイル別デフォルト
 
-| プロファイル | approval_free デフォルト | 理由                                             |
-|-------------|------------------------|--------------------------------------------------|
-| minimal     | true                   | 全フック稼働、人間承認は冗長                      |
-| standard    | true（推奨）           | hooks が 100% カバー、承認疲れ防止                |
-| strict      | false                  | セキュリティ監査で人間承認が必要な場合            |
+| プロファイル | approval_free デフォルト | 理由                                   |
+| ------------ | ------------------------ | -------------------------------------- |
+| minimal      | true                     | 全フック稼働、人間承認は冗長           |
+| standard     | true（推奨）             | hooks が 100% カバー、承認疲れ防止     |
+| strict       | false                    | セキュリティ監査で人間承認が必要な場合 |
 
 #### SessionStart での実装ロジック
 
