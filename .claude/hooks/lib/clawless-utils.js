@@ -23,7 +23,7 @@ const CHAIN_GENESIS_HASH = "0".repeat(64);
 
 /**
  * Read and parse hook input from stdin.
- * @returns {Object} { raw, hookType, toolName, toolInput, sessionId, timestamp }
+ * @returns {Object} { raw, hookType, toolName, toolInput, toolResult, sessionId, timestamp }
  */
 function readHookInput() {
   let raw;
@@ -39,6 +39,7 @@ function readHookInput() {
     hookType: input.hook_type || "",
     toolName: input.tool_name || "",
     toolInput: input.tool_input || {},
+    toolResult: input.tool_result || "",
     sessionId: input.session_id || "",
     timestamp: input.timestamp || "",
   };
