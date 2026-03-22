@@ -59,6 +59,8 @@ HANDOFF-*.md
 # Internal management files (not for public repo)
 tasks/
 scripts/
+docs/
+docs-backup/
 
 # Operational artifacts（運用アーティファクト）
 *-INSTRUCTIONS.md
