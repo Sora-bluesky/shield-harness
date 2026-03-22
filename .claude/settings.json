@@ -114,13 +114,18 @@
         "hooks": [
           {
             "type": "command",
-            "command": "node \"$CLAUDE_PROJECT_DIR/.claude/hooks/tobari-task-completed.js\"",
-            "timeout": 5
+            "command": "node \"$CLAUDE_PROJECT_DIR/.claude/hooks/clawless-task-gate.js\"",
+            "timeout": 60
           },
           {
             "type": "command",
-            "command": "bash \"$CLAUDE_PROJECT_DIR/.claude/hooks/clawless-pipeline.sh\"",
+            "command": "node \"$CLAUDE_PROJECT_DIR/.claude/hooks/clawless-pipeline.js\"",
             "timeout": 30
+          },
+          {
+            "type": "command",
+            "command": "node \"$CLAUDE_PROJECT_DIR/.claude/hooks/tobari-task-completed.js\"",
+            "timeout": 5
           }
         ]
       }
