@@ -391,15 +391,15 @@ ECC components are imported only when they meet ALL of:
 
 ### Official Channels Overview
 
-| 項目 | 内容 |
-|------|------|
-| リリース日 | 2026-03-20（研究プレビュー） |
-| 対応プラットフォーム | Telegram, Discord |
-| アーキテクチャ | MCP サーバー（イベントプッシュ型） |
-| 起動方法 | `claude --channels plugin:telegram@claude-plugins-official` |
-| ランタイム | Bun 必須 |
-| セキュリティ | sender allowlist + pairing code |
-| 現在の制約 | CLI 専用（`--channels` フラグ）。VS Code 拡張は未対応（2026-03-22 時点） |
+| 項目                 | 内容                                                                     |
+| -------------------- | ------------------------------------------------------------------------ |
+| リリース日           | 2026-03-20（研究プレビュー）                                             |
+| 対応プラットフォーム | Telegram, Discord                                                        |
+| アーキテクチャ       | MCP サーバー（イベントプッシュ型）                                       |
+| 起動方法             | `claude --channels plugin:telegram@claude-plugins-official`              |
+| ランタイム           | Bun 必須                                                                 |
+| セキュリティ         | sender allowlist + pairing code                                          |
+| 現在の制約           | CLI 専用（`--channels` フラグ）。VS Code 拡張は未対応（2026-03-22 時点） |
 
 ### 設計方針: 公式 Channels 追従 + 自動適応
 
