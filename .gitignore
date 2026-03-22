@@ -65,6 +65,12 @@ dist
 .tobari-version
 HANDOFF.md
 handoff.md
+HANDOFF-SESSION.md
+HANDOFF-*.md
+
+# Internal management files (not for public repo)
+tasks/
+scripts/
 
 # Operational artifacts（運用アーティファクト）
 *-INSTRUCTIONS.md

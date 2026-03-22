@@ -1,0 +1,47 @@
+#!/usr/bin/env bash
+# pre-commit — Block internal management files from being committed to public repo
+# This hook enforces the absolute rule: internal files must never reach the public repository.
+set -euo pipefail
+
+# Internal file patterns that must NEVER be committed
+BLOCKED_PATTERNS=(
+  "^tasks/"
+  "^scripts/"
+  "^HANDOFF"
+  "INSTRUCTIONS"
+)
+
+staged_files=$(git diff --cached --name-only --diff-filter=ACMR 2>/dev/null || true)
+
+if [ -z "$staged_files" ]; then
+  exit 0
+fi
+
+blocked_files=()
+
+for file in $staged_files; do
+  for pattern in "${BLOCKED_PATTERNS[@]}"; do
+    if echo "$file" | grep -qE "$pattern"; then
+      blocked_files+=("$file")
+      break
+    fi
+  done
+done
+
+if [ ${#blocked_files[@]} -gt 0 ]; then
+  echo ""
+  echo "=== COMMIT BLOCKED ==="
+  echo "Internal management files detected in staging area."
+  echo "These files must NOT be committed to the public repository."
+  echo ""
+  for f in "${blocked_files[@]}"; do
+    echo "  - $f"
+  done
+  echo ""
+  echo "Run: git reset HEAD <file> to unstage them."
+  echo "===================="
+  echo ""
+  exit 1
+fi
+
+exit 0
