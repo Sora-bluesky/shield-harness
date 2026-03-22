@@ -148,6 +148,17 @@ Claude Code がツールを実行する際、3 層の防御を順に通過する
 │                                               │
 │  Windows ネイティブ → Layer 1-2 のみで防御      │
 │  macOS → スコープ外（将来対応候補）              │
+├─────────────────────────────────────────────┤
+│ Defense Layer 3b: OpenShell（オプション）       │
+│ (Docker 環境。ADR-037)                         │
+│                                               │
+│  Landlock LSM: ファイルシステム隔離             │
+│  Seccomp BPF: システムコール制限               │
+│  Network Namespace: ネットワーク隔離           │
+│                                               │
+│  エージェントプロセスの外側で強制               │
+│  → エージェントによるガードレール無効化が不可能  │
+│  ※ 未インストール時は自動スキップ（fail-safe）   │
 └────────────────────┬────────────────────────┘
                      │
                      ▼
@@ -556,24 +567,26 @@ SessionEnd
 
 ## 8. OS 別動作マトリクス
 
-| 機能                          | Windows ネイティブ     | WSL2               | Linux              | macOS      |
-| ----------------------------- | ---------------------- | ------------------ | ------------------ | ---------- |
-| Defense Layer 1 (permissions) | 動作                   | 動作               | 動作               | スコープ外 |
-| Defense Layer 2 (hooks)       | 動作                   | 動作               | 動作               | スコープ外 |
-| Defense Layer 3 (sandbox)     | 未対応（planned）      | 動作（bubblewrap） | 動作（bubblewrap） | スコープ外 |
-| NTFS ADS / Junction 検出      | 動作                   | N/A                | N/A                | N/A        |
-| UNC パス検出                  | 動作                   | 動作               | N/A                | N/A        |
-| bash 実行環境                 | Git Bash               | /bin/bash          | /bin/bash          | N/A        |
-| Channel Gateway               | 動作                   | 動作               | 動作               | スコープ外 |
-| OTEL 統合                     | 動作（Docker Desktop） | 動作               | 動作               | スコープ外 |
+| 機能                          | Windows ネイティブ     | WSL2               | Linux              | macOS             |
+| ----------------------------- | ---------------------- | ------------------ | ------------------ | ----------------- |
+| Defense Layer 1 (permissions) | 動作                   | 動作               | 動作               | スコープ外        |
+| Defense Layer 2 (hooks)       | 動作                   | 動作               | 動作               | スコープ外        |
+| Defense Layer 3 (sandbox)     | 未対応（planned）      | 動作（bubblewrap） | 動作（bubblewrap） | スコープ外        |
+| Defense Layer 3b (OpenShell)  | Docker 利用時動作      | Docker 利用時動作  | Docker 利用時動作  | Docker 利用時動作 |
+| NTFS ADS / Junction 検出      | 動作                   | N/A                | N/A                | N/A               |
+| UNC パス検出                  | 動作                   | 動作               | N/A                | N/A               |
+| bash 実行環境                 | Git Bash               | /bin/bash          | /bin/bash          | N/A               |
+| Channel Gateway               | 動作                   | 動作               | 動作               | スコープ外        |
+| OTEL 統合                     | 動作（Docker Desktop） | 動作               | 動作               | スコープ外        |
 
 Windows ネイティブの残存リスク（Defense Layer 3 不在）:
 
-| リスク                       | 緩和策                                                             |
-| ---------------------------- | ------------------------------------------------------------------ |
-| 子プロセスのファイルアクセス | PreToolUse パターンマッチで大半を検出                              |
-| raw ソケット通信             | エンタープライズ: Windows Firewall 送信規則を推奨                  |
-| DNS トンネリング             | sandbox.network のみ（WSL2/Linux）。Windows ネイティブでは検出困難 |
+| リスク                       | 緩和策                                                             | OpenShell 緩和（Layer 3b, ADR-037） |
+| ---------------------------- | ------------------------------------------------------------------ | ----------------------------------- |
+| 子プロセスのファイルアクセス | PreToolUse パターンマッチで大半を検出                              | Landlock LSM denyWrite / denyRead   |
+| raw ソケット通信             | エンタープライズ: Windows Firewall 送信規則を推奨                  | Seccomp BPF socket deny             |
+| DNS トンネリング             | sandbox.network のみ（WSL2/Linux）。Windows ネイティブでは検出困難 | Network Namespace deny_all_other    |
+| PowerShell ソケット          | パターンマッチで既知パターンを検出                                 | Seccomp BPF + Network Namespace     |
 
 ---
 

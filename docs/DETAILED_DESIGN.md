@@ -1059,13 +1059,33 @@ fi
 
 **検査項目**:
 
-| #   | 検査内容                                     | 出力                               |
-| --- | -------------------------------------------- | ---------------------------------- |
-| 1   | OS 判定（Windows ネイティブ / WSL2 / Linux） | 環境情報をコンテキストに注入       |
-| 2   | jq バージョン確認（1.6 以上）                | 欠落時に警告                       |
-| 3   | sandbox 設定の有効/無効確認                  | Windows ネイティブで無効の旨を通知 |
-| 4   | TTL チェック（ADR-026）                      | 期限超過で警告                     |
-| 5   | トークン予算初期化                           | session.json に budget を書き込み  |
+| #   | 検査内容                                     | 出力                                 |
+| --- | -------------------------------------------- | ------------------------------------ |
+| 1   | OS 判定（Windows ネイティブ / WSL2 / Linux） | 環境情報をコンテキストに注入         |
+| 2   | jq バージョン確認（1.6 以上）                | 欠落時に警告                         |
+| 3   | sandbox 設定の有効/無効確認                  | Windows ネイティブで無効の旨を通知   |
+| 4   | TTL チェック（ADR-026）                      | 期限超過で警告                       |
+| 5   | トークン予算初期化                           | session.json に budget を書き込み    |
+| 6   | OpenShell 検出（Layer 3b, ADR-037）          | 利用可能時に通知。不可でも警告止まり |
+
+**検査 #6 OpenShell 検出の詳細（将来実装: Phase Beta）**:
+
+検出は `lib/openshell-detect.js` モジュールで実行。fail-safe 設計（検出失敗 = unavailable、deny しない）。
+
+```
+1. Docker CLI の存在確認（docker --version, timeout 3s）
+   → 不在: { available: false, reason: "docker_not_found" }
+2. OpenShell CLI の存在確認（openshell --version, timeout 3s）
+   → 不在: { available: false, reason: "openshell_not_installed" }
+3. OpenShell コンテナの稼働確認（docker ps --filter name=openshell）
+   → 停止中: { available: false, reason: "container_not_running" }
+4. 全チェック通過
+   → { available: true, version: "x.y.z" }
+   → session.json に sandbox_openshell フィールドを記録
+   → additionalContext で Layer 3b 有効化を通知
+```
+
+検出は SessionStart 時のみ実行（PreToolUse 毎回実行ではパフォーマンスに影響）。結果は session.json にキャッシュ。
 
 #### 5.1.3 openclaw-check.sh
 
