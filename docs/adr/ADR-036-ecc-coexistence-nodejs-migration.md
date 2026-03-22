@@ -37,12 +37,12 @@ The current DETAILED_DESIGN.md specifies all 22 hooks in bash + jq. This creates
 
 Clawless and ECC occupy **complementary, non-overlapping layers**:
 
-| Layer | Owner | Components |
-|-------|-------|------------|
-| Security & Governance | **Clawless** | STG gates, evidence-ledger, injection-guard, fail-close hooks, deny-by-default permissions |
-| Productivity & Skills | **ECC plugin** | 116+ skills, 28 agents, 59+ commands, continuous-learning |
-| Rules | **Merged** | Clawless security rules + ECC coding rules (no conflict) |
-| Hook Runtime | **Shared** | Both fire on same events; Clawless hooks execute **first** (security gate) |
+| Layer                 | Owner          | Components                                                                                 |
+| --------------------- | -------------- | ------------------------------------------------------------------------------------------ |
+| Security & Governance | **Clawless**   | STG gates, evidence-ledger, injection-guard, fail-close hooks, deny-by-default permissions |
+| Productivity & Skills | **ECC plugin** | 116+ skills, 28 agents, 59+ commands, continuous-learning                                  |
+| Rules                 | **Merged**     | Clawless security rules + ECC coding rules (no conflict)                                   |
+| Hook Runtime          | **Shared**     | Both fire on same events; Clawless hooks execute **first** (security gate)                 |
 
 **Plugin integration approach**:
 
@@ -137,29 +137,33 @@ Phase C (implementation):
 ```javascript
 // clawless-utils.js — Shared utilities for all Clawless hooks (Node.js)
 
-const fs = require('fs');
-const path = require('path');
-const crypto = require('crypto');
+const fs = require("fs");
+const path = require("path");
+const crypto = require("crypto");
 
-const CLAWLESS_DIR = '.clawless';
-const EVIDENCE_FILE = path.join(CLAWLESS_DIR, 'logs', 'evidence-ledger.jsonl');
-const SESSION_FILE = path.join(CLAWLESS_DIR, 'session.json');
-const PATTERNS_FILE = path.join('.claude', 'patterns', 'injection-patterns.json');
+const CLAWLESS_DIR = ".clawless";
+const EVIDENCE_FILE = path.join(CLAWLESS_DIR, "logs", "evidence-ledger.jsonl");
+const SESSION_FILE = path.join(CLAWLESS_DIR, "session.json");
+const PATTERNS_FILE = path.join(
+  ".claude",
+  "patterns",
+  "injection-patterns.json",
+);
 
 /**
  * Read and parse hook input from stdin.
  * @returns {Object} Parsed hook input { hook_type, tool_name, tool_input, session_id, timestamp }
  */
 function readHookInput() {
-  const raw = fs.readFileSync('/dev/stdin', 'utf8');
+  const raw = fs.readFileSync("/dev/stdin", "utf8");
   const input = JSON.parse(raw);
   return {
     raw,
-    hookType: input.hook_type || '',
-    toolName: input.tool_name || '',
+    hookType: input.hook_type || "",
+    toolName: input.tool_name || "",
     toolInput: input.tool_input || {},
-    sessionId: input.session_id || '',
-    timestamp: input.timestamp || '',
+    sessionId: input.session_id || "",
+    timestamp: input.timestamp || "",
   };
 }
 
@@ -171,7 +175,7 @@ function allow(context) {
   if (context) {
     process.stdout.write(JSON.stringify({ additionalContext: context }));
   } else {
-    process.stdout.write('{}');
+    process.stdout.write("{}");
   }
   process.exit(0);
 }
@@ -191,7 +195,7 @@ function deny(reason) {
  * @returns {string} NFKC-normalized string
  */
 function nfkcNormalize(input) {
-  return input.normalize('NFKC');
+  return input.normalize("NFKC");
 }
 
 /**
@@ -200,7 +204,7 @@ function nfkcNormalize(input) {
  * @returns {string} Hex-encoded SHA-256 hash
  */
 function sha256(input) {
-  return crypto.createHash('sha256').update(input).digest('hex');
+  return crypto.createHash("sha256").update(input).digest("hex");
 }
 
 /**
@@ -210,7 +214,7 @@ function sha256(input) {
  */
 function normalizePath(filePath) {
   // Convert Windows backslashes
-  const normalized = filePath.replace(/\\/g, '/');
+  const normalized = filePath.replace(/\\/g, "/");
   return path.resolve(normalized);
 }
 
@@ -220,7 +224,7 @@ function normalizePath(filePath) {
  */
 function readSession() {
   try {
-    return JSON.parse(fs.readFileSync(SESSION_FILE, 'utf8'));
+    return JSON.parse(fs.readFileSync(SESSION_FILE, "utf8"));
   } catch {
     return {};
   }
@@ -249,7 +253,7 @@ function appendEvidence(entry) {
     ...entry,
     recorded_at: new Date().toISOString(),
   });
-  fs.appendFileSync(EVIDENCE_FILE, line + '\n');
+  fs.appendFileSync(EVIDENCE_FILE, line + "\n");
 }
 
 /**
@@ -262,8 +266,8 @@ function readYaml(filePath) {
   // Phase C: bundle js-yaml as dependency
   // For now, this is a design placeholder
   try {
-    const yaml = require('js-yaml');
-    return yaml.load(fs.readFileSync(filePath, 'utf8'));
+    const yaml = require("js-yaml");
+    return yaml.load(fs.readFileSync(filePath, "utf8"));
   } catch {
     deny(`YAML parsing unavailable. Install js-yaml: npm install js-yaml`);
   }
@@ -292,9 +296,9 @@ module.exports = {
 ```javascript
 #!/usr/bin/env node
 // clawless-{name}.js — {Description}
-'use strict';
+"use strict";
 
-const { readHookInput, allow, deny } = require('./lib/clawless-utils');
+const { readHookInput, allow, deny } = require("./lib/clawless-utils");
 
 // fail-close: wrap entire hook in try-catch
 try {
@@ -381,36 +385,106 @@ ECC components are imported only when they meet ALL of:
 
 ---
 
+## D4: Claude Code Channels Security Harness (TASK-015 scope)
+
+> **Discovery (2026-03-22)**: Anthropic が 2026-03-20 に Claude Code Channels を公式リリース。Telegram/Discord を MCP ベースのプラグインアーキテクチャで提供。
+
+### Official Channels Overview
+
+| 項目 | 内容 |
+|------|------|
+| リリース日 | 2026-03-20（研究プレビュー） |
+| 対応プラットフォーム | Telegram, Discord |
+| アーキテクチャ | MCP サーバー（イベントプッシュ型） |
+| 起動方法 | `claude --channels plugin:telegram@claude-plugins-official` |
+| ランタイム | Bun 必須 |
+| セキュリティ | sender allowlist + pairing code |
+| 現在の制約 | CLI 専用（`--channels` フラグ）。VS Code 拡張は未対応（2026-03-22 時点） |
+
+### 設計方針: 公式 Channels 追従 + 自動適応
+
+Clawless は独自のチャンネル実装を**持たない**。公式 Channels のセキュリティハーネスとして機能する。
+
+**理由**:
+
+1. MCP サーバーはイベントをプッシュできない。`--channels` が唯一のプッシュ手段であり、独自代替は技術的に不可能
+2. 公式 Channels は研究プレビュー段階。VS Code 対応は時間の問題であり、独自実装はすぐに陳腐化する
+3. チャンネルが増えるほどセキュリティリスクが増大。公式の Telegram/Discord に絞る
+
+### Clawless の役割: イベント検知 → セキュリティゲート
+
+```
+公式 Channels が有効な環境（CLI、将来的に VS Code）:
+
+  Telegram/Discord → 公式 Channels plugin (MCP push)
+       ↓
+  <channel source="telegram|discord"> イベントとしてセッションに到着
+       ↓
+  Clawless hooks（環境を問わず自動発火）
+       ├─ UserPromptSubmit: source="channel" タグを検知
+       │     → NFKC 正規化 + injection-patterns.json スキャン
+       │     → sender allowlist 二重検証（公式 + Clawless）
+       │     → evidence-ledger に記録（source: channel）
+       ├─ PreToolUse: チャンネル経由のコマンドに通常の gate/permission 適用
+       └─ PostToolUse: 出力の evidence 記録
+
+公式 Channels が無効な環境（現在の VS Code パネルモード）:
+
+  → チャンネル連携は利用不可
+  → Clawless のフック自体は通常通り動作（ローカル操作のみ）
+  → VS Code の --channels 対応時に自動的にセキュリティゲートが有効化
+```
+
+### 自動適応メカニズム
+
+Clawless がチャンネル対応を「自動で追従」できる設計上の根拠:
+
+1. **タグ検知方式**: hooks は `<channel source="...">` タグの有無で判定する。環境固有のコードは不要
+2. **hook 登録は環境非依存**: settings.json の hooks 定義は CLI でも VS Code でも同一。`--channels` が有効化された瞬間から Clawless hooks が発火する
+3. **追加設定不要**: チャンネルメッセージは通常の hook イベント（UserPromptSubmit 等）として流れる。Clawless 側の設定変更は不要
+4. **fail-safe**: チャンネルが無効な環境ではチャンネルイベント自体が到着しないため、hooks のチャンネル検知ロジックは単に発火しない（誤検知なし）
+
+### ECC の立場
+
+ECC はリモート/チャンネル機能を**持っていない**。skills/agents/commands/hooks に特化。チャンネルセキュリティは Clawless の独自領域。
+
+### TASK-015 スコープ改訂
+
+旧スコープ: 「チャンネル連携アーキテクチャ設計（独自実装）」
+新スコープ: 「公式 Channels セキュリティハーネス設計（タグ検知 + injection guard + evidence）」
+
+---
+
 ## Dependencies Eliminated by Migration
 
-| Dependency | Current Role | Node.js Replacement | Status |
-|------------|-------------|---------------------|--------|
-| jq 1.6+ | JSON parsing in hooks | Native `JSON.parse()` | Eliminated |
-| yq (Go) | YAML parsing in pipeline | `js-yaml` package | Eliminated |
-| grep -P (PCRE) | Pattern matching | Native RegExp | Eliminated |
-| flock | File locking | `fs.mkdirSync` lock pattern | Eliminated |
-| realpath | Path resolution | `path.resolve()` | Eliminated |
-| sha256sum | Hashing | `crypto.createHash()` | Eliminated |
+| Dependency     | Current Role             | Node.js Replacement         | Status     |
+| -------------- | ------------------------ | --------------------------- | ---------- |
+| jq 1.6+        | JSON parsing in hooks    | Native `JSON.parse()`       | Eliminated |
+| yq (Go)        | YAML parsing in pipeline | `js-yaml` package           | Eliminated |
+| grep -P (PCRE) | Pattern matching         | Native RegExp               | Eliminated |
+| flock          | File locking             | `fs.mkdirSync` lock pattern | Eliminated |
+| realpath       | Path resolution          | `path.resolve()`            | Eliminated |
+| sha256sum      | Hashing                  | `crypto.createHash()`       | Eliminated |
 
 **Remaining dependencies**:
 
-| Dependency | Role | Required |
-|------------|------|----------|
-| Node.js 18+ | Hook runtime | Yes |
-| pwsh (PowerShell 7) | Sync scripts | Yes (bash fallback) |
-| gh (GitHub CLI) | PR automation | Optional |
-| js-yaml | YAML parsing | Yes (npm install) |
+| Dependency          | Role          | Required            |
+| ------------------- | ------------- | ------------------- |
+| Node.js 18+         | Hook runtime  | Yes                 |
+| pwsh (PowerShell 7) | Sync scripts  | Yes (bash fallback) |
+| gh (GitHub CLI)     | PR automation | Optional            |
+| js-yaml             | YAML parsing  | Yes (npm install)   |
 
 ---
 
 ## Risks and Mitigations
 
-| Risk | Likelihood | Impact | Mitigation |
-|------|-----------|--------|-----------|
-| Node.js not installed on target | Low | High | fail-close: settings.json hooks fail silently if node not found; `npx clawless init` checks prerequisites |
-| ECC breaking changes | Medium | Medium | Pin ECC version; import components, not runtime |
-| Performance regression (Node.js startup) | Low | Medium | Node.js CommonJS cold start ~30ms (within 50ms target); benchmark in Phase C |
-| Migration introduces bugs | Medium | High | Phase C: migrate one hook at a time with A/B test against bash version |
+| Risk                                     | Likelihood | Impact | Mitigation                                                                                                |
+| ---------------------------------------- | ---------- | ------ | --------------------------------------------------------------------------------------------------------- |
+| Node.js not installed on target          | Low        | High   | fail-close: settings.json hooks fail silently if node not found; `npx clawless init` checks prerequisites |
+| ECC breaking changes                     | Medium     | Medium | Pin ECC version; import components, not runtime                                                           |
+| Performance regression (Node.js startup) | Low        | Medium | Node.js CommonJS cold start ~30ms (within 50ms target); benchmark in Phase C                              |
+| Migration introduces bugs                | Medium     | High   | Phase C: migrate one hook at a time with A/B test against bash version                                    |
 
 ---
 
