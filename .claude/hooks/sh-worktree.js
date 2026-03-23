@@ -155,6 +155,7 @@ try {
 
   if (!worktreePath) {
     allow();
+    return;
   }
 
   if (hookType === "WorktreeCreate") {
@@ -177,6 +178,7 @@ try {
     allow(
       `[${HOOK_NAME}] Shield Harness 設定を worktree にコピーしました (${filesCopied} files)`,
     );
+    return;
   }
 
   if (hookType === "WorktreeRemove") {
@@ -199,6 +201,7 @@ try {
     allow(
       `[${HOOK_NAME}] Worktree 証跡をマージしました (${entriesMerged} entries)`,
     );
+    return;
   }
 
   // Unknown event type — allow passthrough

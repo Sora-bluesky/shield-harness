@@ -188,6 +188,62 @@ function appendEvidence(entry) {
   fs.appendFileSync(EVIDENCE_FILE, JSON.stringify(record) + "\n");
 }
 
+// --- Hash Chain Verification ---
+
+/**
+ * Verify the integrity of the evidence-ledger hash chain.
+ * @param {string} [ledgerPath] - Path to evidence-ledger.jsonl (defaults to EVIDENCE_FILE)
+ * @returns {{ valid: boolean, entries: number, brokenAt?: number, reason?: string }}
+ */
+function verifyHashChain(ledgerPath) {
+  const filePath = ledgerPath || EVIDENCE_FILE;
+
+  let content;
+  try {
+    content = fs.readFileSync(filePath, "utf8").trim();
+  } catch {
+    // File does not exist — empty chain is valid
+    return { valid: true, entries: 0 };
+  }
+
+  if (!content) {
+    return { valid: true, entries: 0 };
+  }
+
+  const lines = content.split("\n");
+  let expectedPrevHash = CHAIN_GENESIS_HASH;
+
+  for (let i = 0; i < lines.length; i++) {
+    const entry = JSON.parse(lines[i]);
+
+    // Check prev_hash linkage
+    if (entry.prev_hash !== expectedPrevHash) {
+      return {
+        valid: false,
+        entries: lines.length,
+        brokenAt: i,
+        reason: "prev_hash_mismatch",
+      };
+    }
+
+    // Recompute hash: remove 'hash' field, hash the rest
+    const { hash, ...rest } = entry;
+    const computed = sha256(JSON.stringify(rest));
+    if (computed !== hash) {
+      return {
+        valid: false,
+        entries: lines.length,
+        brokenAt: i,
+        reason: "hash_mismatch",
+      };
+    }
+
+    expectedPrevHash = hash;
+  }
+
+  return { valid: true, entries: lines.length };
+}
+
 // --- YAML ---
 
 /**
@@ -279,4 +335,6 @@ module.exports = {
   commandExists,
   // Patterns
   loadPatterns,
+  // Hash Chain
+  verifyHashChain,
 };

@@ -146,6 +146,7 @@ try {
     allow(
       `[${HOOK_NAME}] Baseline recorded: ${Object.keys(currentHashes).length} files`,
     );
+    return;
   }
 
   // Detect changes
@@ -188,6 +189,7 @@ try {
     }
 
     allow(warnings.join("\n"));
+    return;
   }
 
   // No changes

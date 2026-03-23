@@ -84,16 +84,25 @@ function extractHostsFromCommand(command) {
 
 /**
  * Extract hostname from a URL string.
+ * Applies URL decoding before parsing to defeat percent-encoding evasion.
  * @param {string} url
  * @returns {string|null} Lowercase hostname or null.
  */
 function extractHostFromUrl(url) {
+  // Decode percent-encoded characters before parsing (SSRF evasion defense)
+  let decoded = url;
   try {
-    const parsed = new URL(url);
+    decoded = decodeURIComponent(url);
+  } catch {
+    // Malformed percent encoding — proceed with original
+  }
+
+  try {
+    const parsed = new URL(decoded);
     return parsed.hostname.toLowerCase();
   } catch {
     // Try extracting with regex as fallback
-    const match = url.match(/^https?:\/\/([^/:]+)/i);
+    const match = decoded.match(/^https?:\/\/([^/:]+)/i);
     return match ? match[1].toLowerCase() : null;
   }
 }
@@ -179,6 +188,67 @@ function isProductionHost(hostname, config) {
 }
 
 // ---------------------------------------------------------------------------
+// Internal Host Check (SSRF / private network defense)
+// ---------------------------------------------------------------------------
+
+// Cloud metadata service IPs and hostnames
+const CLOUD_METADATA_HOSTS = new Set([
+  "169.254.169.254", // AWS, Azure
+  "metadata.google.internal", // GCP
+  "100.100.100.200", // Alibaba Cloud
+]);
+
+// Localhost aliases
+const LOCALHOST_ALIASES = new Set([
+  "127.0.0.1",
+  "localhost",
+  "0.0.0.0",
+  "[::1]",
+  "::1",
+]);
+
+/**
+ * Check if a hostname is an internal/private network address.
+ * Detects: cloud metadata endpoints, localhost aliases, RFC 1918 private IPs.
+ * @param {string} hostname - Lowercase hostname to check.
+ * @returns {boolean}
+ */
+function isInternalHost(hostname) {
+  if (!hostname) return false;
+
+  const h = hostname.toLowerCase();
+
+  // Cloud metadata endpoints
+  if (CLOUD_METADATA_HOSTS.has(h)) return true;
+
+  // Localhost aliases
+  if (LOCALHOST_ALIASES.has(h)) return true;
+
+  // RFC 1918 private IP ranges
+  const ipMatch = h.match(/^(\d{1,3})\.(\d{1,3})\.(\d{1,3})\.(\d{1,3})$/);
+  if (ipMatch) {
+    const [, a, b] = ipMatch.map(Number);
+
+    // 10.0.0.0/8
+    if (a === 10) return true;
+
+    // 172.16.0.0/12 (172.16.x.x — 172.31.x.x)
+    if (a === 172 && b >= 16 && b <= 31) return true;
+
+    // 192.168.0.0/16
+    if (a === 192 && b === 168) return true;
+
+    // Link-local (169.254.x.x) — covers AWS metadata and other link-local
+    if (a === 169 && b === 254) return true;
+  }
+
+  // Hostname ending with .internal (GCP convention)
+  if (h.endsWith(".internal")) return true;
+
+  return false;
+}
+
+// ---------------------------------------------------------------------------
 // Jurisdiction Check
 // ---------------------------------------------------------------------------
 
@@ -205,97 +275,101 @@ function estimateJurisdiction(hostname, tldMap) {
 }
 
 // ---------------------------------------------------------------------------
-// Main
+// Main (only runs when executed directly, not when required for testing)
 // ---------------------------------------------------------------------------
 
-try {
-  const input = readHookInput();
-  const toolName = input.toolName;
-  const toolInput = input.toolInput;
-
-  // Check channel source for evidence metadata (§8.6.3)
-  let isChannel = false;
+if (require.main === module) {
   try {
-    const session = readSession();
-    isChannel = session.source === "channel";
-  } catch {
-    // Session read failure is non-blocking
-  }
+    const input = readHookInput();
+    const toolName = input.toolName;
+    const toolInput = input.toolInput;
 
-  // --- Step 1: Production DB host detection ---
-  const prodConfig = loadProductionHosts();
-
-  if (prodConfig) {
-    let hostsToCheck = [];
-
-    if (toolName === "Bash") {
-      const command = (toolInput.command || "").trim();
-      hostsToCheck = extractHostsFromCommand(command);
-    } else if (toolName === "WebFetch") {
-      const url = toolInput.url || "";
-      const host = extractHostFromUrl(url);
-      if (host) hostsToCheck = [host];
+    // Check channel source for evidence metadata (§8.6.3)
+    let isChannel = false;
+    try {
+      const session = readSession();
+      isChannel = session.source === "channel";
+    } catch {
+      // Session read failure is non-blocking
     }
 
-    for (const host of hostsToCheck) {
-      if (isProductionHost(host, prodConfig)) {
-        appendEvidence({
-          event: "data_boundary_deny",
-          hook: "sh-data-boundary",
-          tool: toolName,
-          host: host,
-          reason: "production_host_detected",
-          is_channel: isChannel,
-        });
-        deny(`Production environment access is prohibited: ${host}`);
+    // --- Step 1: Production DB host detection ---
+    const prodConfig = loadProductionHosts();
+
+    if (prodConfig) {
+      let hostsToCheck = [];
+
+      if (toolName === "Bash") {
+        const command = (toolInput.command || "").trim();
+        hostsToCheck = extractHostsFromCommand(command);
+      } else if (toolName === "WebFetch") {
+        const url = toolInput.url || "";
+        const host = extractHostFromUrl(url);
+        if (host) hostsToCheck = [host];
       }
-    }
-  }
 
-  // --- Step 2: Jurisdiction check (WebFetch only) ---
-  if (toolName === "WebFetch") {
-    const jurisdictionConfig = loadAllowedJurisdictions();
-
-    if (jurisdictionConfig) {
-      const url = toolInput.url || "";
-      const host = extractHostFromUrl(url);
-
-      if (host) {
-        const jurisdiction = estimateJurisdiction(
-          host,
-          jurisdictionConfig.tldMap,
-        );
-
-        if (jurisdiction && !jurisdictionConfig.allowed.has(jurisdiction)) {
+      for (const host of hostsToCheck) {
+        if (isProductionHost(host, prodConfig)) {
           appendEvidence({
             event: "data_boundary_deny",
             hook: "sh-data-boundary",
             tool: toolName,
             host: host,
-            jurisdiction: jurisdiction,
-            reason: "unauthorized_jurisdiction",
+            reason: "production_host_detected",
             is_channel: isChannel,
           });
-          deny(
-            `Unauthorized jurisdiction detected: ${jurisdiction} (host: ${host}). ` +
-              `Allowed: ${[...jurisdictionConfig.allowed].join(", ")}`,
-          );
+          deny(`Production environment access is prohibited: ${host}`);
+          return;
         }
       }
     }
-  }
 
-  // --- Step 3: All checks passed ---
-  allow();
-} catch (err) {
-  // fail-close: any uncaught error = deny
-  process.stdout.write(
-    JSON.stringify({
-      reason: `Hook error (sh-data-boundary): ${err.message}`,
-    }),
-  );
-  process.exit(2);
-}
+    // --- Step 2: Jurisdiction check (WebFetch only) ---
+    if (toolName === "WebFetch") {
+      const jurisdictionConfig = loadAllowedJurisdictions();
+
+      if (jurisdictionConfig) {
+        const url = toolInput.url || "";
+        const host = extractHostFromUrl(url);
+
+        if (host) {
+          const jurisdiction = estimateJurisdiction(
+            host,
+            jurisdictionConfig.tldMap,
+          );
+
+          if (jurisdiction && !jurisdictionConfig.allowed.has(jurisdiction)) {
+            appendEvidence({
+              event: "data_boundary_deny",
+              hook: "sh-data-boundary",
+              tool: toolName,
+              host: host,
+              jurisdiction: jurisdiction,
+              reason: "unauthorized_jurisdiction",
+              is_channel: isChannel,
+            });
+            deny(
+              `Unauthorized jurisdiction detected: ${jurisdiction} (host: ${host}). ` +
+                `Allowed: ${[...jurisdictionConfig.allowed].join(", ")}`,
+            );
+            return;
+          }
+        }
+      }
+    }
+
+    // --- Step 3: All checks passed ---
+    allow();
+  } catch (err) {
+    // fail-close: any uncaught error = deny
+    process.stdout.write(
+      JSON.stringify({
+        reason: `Hook error (sh-data-boundary): ${err.message}`,
+      }),
+    );
+    process.exit(2);
+  }
+} // end require.main === module
 
 // ---------------------------------------------------------------------------
 // Exports (for testing)
@@ -311,5 +385,6 @@ module.exports = {
   loadProductionHosts,
   loadAllowedJurisdictions,
   isProductionHost,
+  isInternalHost,
   estimateJurisdiction,
 };

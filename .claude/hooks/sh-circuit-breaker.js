@@ -47,6 +47,7 @@ try {
     allow(
       "[sh-circuit-breaker] stop_hook_active detected — allowing stop to prevent loop.",
     );
+    return;
   }
 
   // Step 2: Read and evaluate retry count
@@ -74,6 +75,7 @@ try {
     allow(
       `[sh-circuit-breaker] リトライ上限（${MAX_RETRIES}回）に到達しました。停止を許可します。`,
     );
+    return;
   }
 
   // Step 3: Retry — deny the stop request
