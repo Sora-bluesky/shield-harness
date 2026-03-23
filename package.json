@@ -1,6 +1,6 @@
 {
   "name": "clawless",
-  "version": "0.1.0",
+  "version": "1.0.0",
   "description": "Security harness for Claude Code — hooks-driven, zero-hassle defense",
   "bin": {
     "clawless": "./bin/clawless.js"
