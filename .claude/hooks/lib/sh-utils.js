@@ -147,11 +147,22 @@ function writeSession(data) {
 
 /**
  * Append evidence entry to JSONL ledger with SHA-256 hash chain.
+ * Entries are transformed to OCSF Detection Finding (class_uid: 2004) format.
  * @param {Object} entry
  */
 function appendEvidence(entry) {
   const dir = path.dirname(EVIDENCE_FILE);
   if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
+
+  // OCSF transformation (lazy require to avoid startup cost)
+  let ocsfEntry;
+  try {
+    const { toDetectionFinding } = require("./ocsf-mapper");
+    ocsfEntry = toDetectionFinding(entry);
+  } catch {
+    // Fallback: use raw entry if OCSF mapper is unavailable
+    ocsfEntry = { ...entry };
+  }
 
   // Read last hash for chain continuity
   let prevHash = CHAIN_GENESIS_HASH;
@@ -168,7 +179,7 @@ function appendEvidence(entry) {
   }
 
   const record = {
-    ...entry,
+    ...ocsfEntry,
     recorded_at: new Date().toISOString(),
     prev_hash: prevHash,
   };
