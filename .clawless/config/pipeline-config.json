@@ -10,6 +10,8 @@
   "approval_free": true,
   "sync_views_on_commit": true,
   "sync_views_on_session_start": true,
+  "auto_tag": false,
+  "version_bump": "patch",
   "auto_pickup_next_task": false,
   "auto_skip_blocked": false,
   "blocked_notification_channel": null
