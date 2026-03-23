@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// clawless-config-guard.js — Settings.json mutation guard
+// sh-config-guard.js — Settings.json mutation guard
 // Spec: DETAILED_DESIGN.md §5.3
 // Event: ConfigChange
 // Target response time: < 100ms
@@ -13,9 +13,9 @@ const {
   deny,
   sha256,
   appendEvidence,
-} = require("./lib/clawless-utils");
+} = require("./lib/sh-utils");
 
-const HOOK_NAME = "clawless-config-guard";
+const HOOK_NAME = "sh-config-guard";
 const SETTINGS_FILE = path.join(".claude", "settings.json");
 const CONFIG_HASH_FILE = path.join(".claude", "logs", "config-hash.json");
 
@@ -44,7 +44,7 @@ function loadStoredConfig() {
   try {
     if (!fs.existsSync(CONFIG_HASH_FILE)) return null;
     const data = JSON.parse(fs.readFileSync(CONFIG_HASH_FILE, "utf8"));
-    // Validate clawless format (deny_rules array required)
+    // Validate shield-harness format (deny_rules array required)
     // Reject legacy-format snapshots (hash + snapshot_keys only)
     if (!Array.isArray(data.deny_rules)) return null;
     return data;

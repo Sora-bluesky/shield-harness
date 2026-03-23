@@ -10,7 +10,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "node \"$CLAUDE_PROJECT_DIR/.claude/hooks/clawless-session-start.js\"",
+            "command": "node \"$CLAUDE_PROJECT_DIR/.claude/hooks/sh-session-start.js\"",
             "timeout": 5
           }
         ]
@@ -22,7 +22,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "node \"$CLAUDE_PROJECT_DIR/.claude/hooks/clawless-permission.js\"",
+            "command": "node \"$CLAUDE_PROJECT_DIR/.claude/hooks/sh-permission.js\"",
             "timeout": 10
           }
         ]
@@ -32,12 +32,12 @@
         "hooks": [
           {
             "type": "command",
-            "command": "node \"$CLAUDE_PROJECT_DIR/.claude/hooks/clawless-gate.js\"",
+            "command": "node \"$CLAUDE_PROJECT_DIR/.claude/hooks/sh-gate.js\"",
             "timeout": 10
           },
           {
             "type": "command",
-            "command": "node \"$CLAUDE_PROJECT_DIR/.claude/hooks/clawless-quiet-inject.js\"",
+            "command": "node \"$CLAUDE_PROJECT_DIR/.claude/hooks/sh-quiet-inject.js\"",
             "timeout": 5
           }
         ]
@@ -47,7 +47,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "node \"$CLAUDE_PROJECT_DIR/.claude/hooks/clawless-injection-guard.js\"",
+            "command": "node \"$CLAUDE_PROJECT_DIR/.claude/hooks/sh-injection-guard.js\"",
             "timeout": 10
           }
         ]
@@ -57,7 +57,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "node \"$CLAUDE_PROJECT_DIR/.claude/hooks/clawless-data-boundary.js\"",
+            "command": "node \"$CLAUDE_PROJECT_DIR/.claude/hooks/sh-data-boundary.js\"",
             "timeout": 5
           }
         ]
@@ -69,13 +69,13 @@
         "hooks": [
           {
             "type": "command",
-            "command": "node \"$CLAUDE_PROJECT_DIR/.claude/hooks/clawless-evidence.js\"",
+            "command": "node \"$CLAUDE_PROJECT_DIR/.claude/hooks/sh-evidence.js\"",
             "timeout": 5,
             "async": true
           },
           {
             "type": "command",
-            "command": "node \"$CLAUDE_PROJECT_DIR/.claude/hooks/clawless-output-control.js\"",
+            "command": "node \"$CLAUDE_PROJECT_DIR/.claude/hooks/sh-output-control.js\"",
             "timeout": 5
           }
         ]
@@ -85,7 +85,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "node \"$CLAUDE_PROJECT_DIR/.claude/hooks/clawless-dep-audit.js\"",
+            "command": "node \"$CLAUDE_PROJECT_DIR/.claude/hooks/sh-dep-audit.js\"",
             "timeout": 5
           }
         ]
@@ -107,7 +107,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "node \"$CLAUDE_PROJECT_DIR/.claude/hooks/clawless-evidence.js\"",
+            "command": "node \"$CLAUDE_PROJECT_DIR/.claude/hooks/sh-evidence.js\"",
             "timeout": 5,
             "async": true
           }
@@ -119,7 +119,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "node \"$CLAUDE_PROJECT_DIR/.claude/hooks/clawless-session-end.js\"",
+            "command": "node \"$CLAUDE_PROJECT_DIR/.claude/hooks/sh-session-end.js\"",
             "timeout": 5
           }
         ]
@@ -130,7 +130,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "node \"$CLAUDE_PROJECT_DIR/.claude/hooks/clawless-circuit-breaker.js\"",
+            "command": "node \"$CLAUDE_PROJECT_DIR/.claude/hooks/sh-circuit-breaker.js\"",
             "timeout": 5
           }
         ]
@@ -141,7 +141,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "node \"$CLAUDE_PROJECT_DIR/.claude/hooks/clawless-evidence.js\"",
+            "command": "node \"$CLAUDE_PROJECT_DIR/.claude/hooks/sh-evidence.js\"",
             "timeout": 5,
             "async": true
           }
@@ -153,12 +153,12 @@
         "hooks": [
           {
             "type": "command",
-            "command": "node \"$CLAUDE_PROJECT_DIR/.claude/hooks/clawless-task-gate.js\"",
+            "command": "node \"$CLAUDE_PROJECT_DIR/.claude/hooks/sh-task-gate.js\"",
             "timeout": 60
           },
           {
             "type": "command",
-            "command": "node \"$CLAUDE_PROJECT_DIR/.claude/hooks/clawless-pipeline.js\"",
+            "command": "node \"$CLAUDE_PROJECT_DIR/.claude/hooks/sh-pipeline.js\"",
             "timeout": 30
           }
         ]
@@ -170,7 +170,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "node \"$CLAUDE_PROJECT_DIR/.claude/hooks/clawless-precompact.js\"",
+            "command": "node \"$CLAUDE_PROJECT_DIR/.claude/hooks/sh-precompact.js\"",
             "timeout": 5
           }
         ]
@@ -182,7 +182,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "node \"$CLAUDE_PROJECT_DIR/.claude/hooks/clawless-postcompact.js\"",
+            "command": "node \"$CLAUDE_PROJECT_DIR/.claude/hooks/sh-postcompact.js\"",
             "timeout": 5
           }
         ]
@@ -193,7 +193,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "node \"$CLAUDE_PROJECT_DIR/.claude/hooks/clawless-instructions.js\"",
+            "command": "node \"$CLAUDE_PROJECT_DIR/.claude/hooks/sh-instructions.js\"",
             "timeout": 5
           }
         ]
@@ -204,7 +204,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "node \"$CLAUDE_PROJECT_DIR/.claude/hooks/clawless-user-prompt.js\"",
+            "command": "node \"$CLAUDE_PROJECT_DIR/.claude/hooks/sh-user-prompt.js\"",
             "timeout": 5
           }
         ]
@@ -216,7 +216,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "node \"$CLAUDE_PROJECT_DIR/.claude/hooks/clawless-permission-learn.js\"",
+            "command": "node \"$CLAUDE_PROJECT_DIR/.claude/hooks/sh-permission-learn.js\"",
             "timeout": 5
           }
         ]
@@ -227,7 +227,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "node \"$CLAUDE_PROJECT_DIR/.claude/hooks/clawless-config-guard.js\"",
+            "command": "node \"$CLAUDE_PROJECT_DIR/.claude/hooks/sh-config-guard.js\"",
             "timeout": 5
           }
         ]
@@ -238,7 +238,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "node \"$CLAUDE_PROJECT_DIR/.claude/hooks/clawless-subagent.js\"",
+            "command": "node \"$CLAUDE_PROJECT_DIR/.claude/hooks/sh-subagent.js\"",
             "timeout": 5
           }
         ]
@@ -249,7 +249,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "node \"$CLAUDE_PROJECT_DIR/.claude/hooks/clawless-elicitation.js\"",
+            "command": "node \"$CLAUDE_PROJECT_DIR/.claude/hooks/sh-elicitation.js\"",
             "timeout": 5
           }
         ]
@@ -260,7 +260,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "node \"$CLAUDE_PROJECT_DIR/.claude/hooks/clawless-evidence.js\"",
+            "command": "node \"$CLAUDE_PROJECT_DIR/.claude/hooks/sh-evidence.js\"",
             "timeout": 5,
             "async": true
           }
@@ -272,7 +272,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "node \"$CLAUDE_PROJECT_DIR/.claude/hooks/clawless-worktree.js\"",
+            "command": "node \"$CLAUDE_PROJECT_DIR/.claude/hooks/sh-worktree.js\"",
             "timeout": 10
           }
         ]
@@ -283,7 +283,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "node \"$CLAUDE_PROJECT_DIR/.claude/hooks/clawless-worktree.js\"",
+            "command": "node \"$CLAUDE_PROJECT_DIR/.claude/hooks/sh-worktree.js\"",
             "timeout": 10
           }
         ]
@@ -294,7 +294,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "node \"$CLAUDE_PROJECT_DIR/.claude/hooks/clawless-evidence.js\"",
+            "command": "node \"$CLAUDE_PROJECT_DIR/.claude/hooks/sh-evidence.js\"",
             "timeout": 5,
             "async": true
           }

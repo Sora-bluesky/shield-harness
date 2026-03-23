@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// clawless-evidence.js — SHA-256 hash chain evidence recording
+// sh-evidence.js — SHA-256 hash chain evidence recording
 // Spec: DETAILED_DESIGN.md §4.1
 // Hook events: PostToolUse, PostToolUseFailure, ElicitationResult, TeammateIdle, StopFailure
 // Matcher: "" (all tools)
@@ -13,14 +13,14 @@ const {
   appendEvidence,
   readSession,
   EVIDENCE_FILE,
-} = require("./lib/clawless-utils");
+} = require("./lib/sh-utils");
 const fs = require("fs");
 
 // ---------------------------------------------------------------------------
 // Constants / Patterns
 // ---------------------------------------------------------------------------
 
-const HOOK_NAME = "clawless-evidence";
+const HOOK_NAME = "sh-evidence";
 
 // PII detection patterns (FR-05-02)
 const PII_PATTERNS = [

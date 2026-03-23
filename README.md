@@ -1,6 +1,6 @@
 <div align="center">
 
-# Clawless
+# Shield Harness
 
 **Security harness for Claude Code — zero-hassle, hooks-driven defense**
 
@@ -9,7 +9,7 @@
 
 </div>
 
-## What is Clawless
+## What is Shield Harness
 
 A security harness that governs Claude Code through multi-layered defense:
 hooks + rules + permissions + settings deployed in the `.claude/` directory.
@@ -17,10 +17,10 @@ hooks + rules + permissions + settings deployed in the `.claude/` directory.
 ## Quick Start
 
 ```bash
-npx clawless init [--profile minimal|standard|strict]
+npx shield-harness init [--profile minimal|standard|strict]
 ```
 
-## Why Clawless
+## Why Shield Harness
 
 - **Hooks-driven defense**: 22 security hooks monitor every Claude Code operation
 - **Approval-free mode**: Delegate all security decisions to hooks, eliminating human approval dialogs

@@ -21,19 +21,19 @@ These guarantees hold regardless of approval_free setting:
 ## Claude Code Channels Security Harness (ADR-036 §D4)
 
 Claude Code Channels (2026-03-20 公式リリース) は MCP ベースの Telegram/Discord 連携。
-Clawless は独自のチャンネル実装を持たず、公式 Channels のセキュリティハーネスとして機能する。
+Shield Harness は独自のチャンネル実装を持たず、公式 Channels のセキュリティハーネスとして機能する。
 
 ### 対応方針
 
 - 公式 Channels のみサポート（Telegram, Discord）
 - 独自チャンネル実装は行わない（公式 Channels の `--channels` が唯一のプッシュ手段）
 - VS Code パネルモードでの `--channels` 対応は公式の対応を待つ
-- Clawless hooks はタグ検知方式で自動追従（環境固有コード不要）
+- Shield Harness hooks はタグ検知方式で自動追従（環境固有コード不要）
 
 ### チャンネルイベント検知
 
 Channel messages arrive as `<channel source="telegram|discord">` events.
-Clawless hooks detect this tag automatically on any hook event:
+Shield Harness hooks detect this tag automatically on any hook event:
 
 - `UserPromptSubmit`: channel source tag detection → NFKC normalization → injection scan
 - `PreToolUse`: normal gate/permission checks apply to channel-originated commands
@@ -41,17 +41,17 @@ Clawless hooks detect this tag automatically on any hook event:
 
 ### 自動適応保証
 
-以下の理由により、Clawless は公式 Channels の環境拡大に自動追従する:
+以下の理由により、Shield Harness は公式 Channels の環境拡大に自動追従する:
 
 1. hooks は `<channel source="...">` タグの有無で判定（環境非依存）
 2. settings.json の hook 登録は CLI / VS Code 共通
-3. `--channels` が VS Code で有効化された瞬間から Clawless のセキュリティゲートが発火
+3. `--channels` が VS Code で有効化された瞬間から Shield Harness のセキュリティゲートが発火
 4. チャンネル無効環境ではイベント自体が到着しないため、誤検知なし（fail-safe）
 
 ### チャンネル固有の脅威緩和
 
 - **Injection via channel message**: NFKC normalization + injection-patterns.json scan
-- **Unauthorized sender**: 公式 allowlist（第一防衛線）+ Clawless 二重検証
+- **Unauthorized sender**: 公式 allowlist（第一防衛線）+ Shield Harness 二重検証
 - **Privilege escalation**: channel messages cannot modify deny rules or hook configuration
 - **Task creation via channel**: requires STG0 gate validation before acceptance
 
@@ -59,15 +59,15 @@ Clawless hooks detect this tag automatically on any hook event:
 
 Hook implementations that handle channel-related security:
 
-| Threat                | Hook                      | Function                                                                | Spec       |
-| --------------------- | ------------------------- | ----------------------------------------------------------------------- | ---------- |
-| Injection via channel | clawless-user-prompt.js   | `scanPatterns()` with `isChannel` flag                                  | §5.4, §8.6 |
-| Severity boost        | clawless-user-prompt.js   | `boostSeverity()` — elevates severity by one level for channel messages | §8.6.2     |
-| Channel detection     | clawless-user-prompt.js   | `session.source === "channel"` check via `readSession()`                | §8.6.1     |
-| Evidence metadata     | clawless-evidence.js      | `is_channel` field in evidence-ledger.jsonl entries                     | §8.6.3     |
-| Data boundary         | clawless-data-boundary.js | Jurisdiction tracking applies to channel-originated commands            | §3.4       |
-| Config protection     | clawless-config-guard.js  | deny rules and hook config immutable regardless of source               | §5.3       |
-| Task gate             | clawless-pipeline.js      | STG0 validation required for channel-originated task creation           | §8.1       |
+| Threat                | Hook                | Function                                                                | Spec       |
+| --------------------- | ------------------- | ----------------------------------------------------------------------- | ---------- |
+| Injection via channel | sh-user-prompt.js   | `scanPatterns()` with `isChannel` flag                                  | §5.4, §8.6 |
+| Severity boost        | sh-user-prompt.js   | `boostSeverity()` — elevates severity by one level for channel messages | §8.6.2     |
+| Channel detection     | sh-user-prompt.js   | `session.source === "channel"` check via `readSession()`                | §8.6.1     |
+| Evidence metadata     | sh-evidence.js      | `is_channel` field in evidence-ledger.jsonl entries                     | §8.6.3     |
+| Data boundary         | sh-data-boundary.js | Jurisdiction tracking applies to channel-originated commands            | §3.4       |
+| Config protection     | sh-config-guard.js  | deny rules and hook config immutable regardless of source               | §5.3       |
+| Task gate             | sh-pipeline.js      | STG0 validation required for channel-originated task creation           | §8.1       |
 
 ### Severity Boost Table
 
@@ -84,7 +84,7 @@ Channel messages automatically boost pattern severity by one level:
 
 When `--channels` becomes available in VS Code panel mode:
 
-1. `clawless-session-start.js` version-check detects the new capability
-2. additionalContext suggests migration via `npx clawless channels migrate`
+1. `sh-session-start.js` version-check detects the new capability
+2. additionalContext suggests migration via `npx shield-harness channels migrate`
 3. No hook code changes required — tag-based detection is environment-agnostic
 4. New channel providers (beyond Telegram/Discord) are automatically covered

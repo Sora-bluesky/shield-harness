@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// clawless-session-start.js — Session initialization & integrity baseline
+// sh-session-start.js — Session initialization & integrity baseline
 // Spec: DETAILED_DESIGN.md §5.1
 // Event: SessionStart
 // Target response time: < 500ms
@@ -14,9 +14,9 @@ const {
   readSession,
   writeSession,
   appendEvidence,
-} = require("./lib/clawless-utils");
+} = require("./lib/sh-utils");
 
-const HOOK_NAME = "clawless-session-start";
+const HOOK_NAME = "sh-session-start";
 const CLAUDE_MD = "CLAUDE.md";
 const SETTINGS_FILE = path.join(".claude", "settings.json");
 const RULES_DIR = path.join(".claude", "rules");
@@ -27,8 +27,12 @@ const PATTERNS_FILE = path.join(
   "patterns",
   "injection-patterns.json",
 );
-const SESSION_FILE = path.join(".clawless", "session.json");
-const VERSION_FILE = path.join(".clawless", "state", "last-known-version.txt");
+const SESSION_FILE = path.join(".shield-harness", "session.json");
+const VERSION_FILE = path.join(
+  ".shield-harness",
+  "state",
+  "last-known-version.txt",
+);
 
 // Expected minimum deny rules (§5.1.1)
 const REQUIRED_DENY_PATTERNS = [
@@ -86,7 +90,7 @@ try {
   if (fs.existsSync(HOOKS_DIR)) {
     const hookFiles = fs
       .readdirSync(HOOKS_DIR)
-      .filter((f) => f.startsWith("clawless-") && f.endsWith(".js"));
+      .filter((f) => f.startsWith("sh-") && f.endsWith(".js"));
     if (hookFiles.length < MIN_HOOK_COUNT) {
       contextParts.push(
         `[gate-check] Hook count: ${hookFiles.length}/${MIN_HOOK_COUNT} (below minimum)`,
@@ -174,7 +178,7 @@ try {
 
   // --- Output ---
   const context = [
-    "=== Clawless Security Harness Initialized ===",
+    "=== Shield Harness Security Harness Initialized ===",
     ...contextParts,
     "=============================================",
   ].join("\n");
@@ -182,10 +186,7 @@ try {
   allow(context);
 } catch (_err) {
   // Operational hook — fail-open
-  allow(
-    "[clawless-session-start] Initialization error (fail-open): " +
-      _err.message,
-  );
+  allow("[sh-session-start] Initialization error (fail-open): " + _err.message);
 }
 
 module.exports = {

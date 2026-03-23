@@ -1,4 +1,4 @@
-# Clawless — 設計フェーズ参照資料（Git 対象外）
+# Shield Harness — 設計フェーズ参照資料（Git 対象外）
 .reference/
 
 # OS
@@ -34,12 +34,15 @@ dist
 # TypeScript cache
 *.tsbuildinfo
 
-# Clawless ランタイム（証跡・セッション状態）
-.clawless/logs/
-.clawless/state/
-.clawless/backup/
-.clawless/compact-backup/
-.clawless/session.json
+# Shield Harness ランタイム（証跡・セッション状態）
+.shield-harness/logs/
+.shield-harness/state/
+.shield-harness/backup/
+.shield-harness/compact-backup/
+.shield-harness/session.json
+
+# Legacy runtime directory (migration period)
+.clawless/
 
 # 環境固有
 .env

@@ -1,8 +1,8 @@
 #!/usr/bin/env node
-// clawless-task-gate.js — Test gate before task completion
+// sh-task-gate.js — Test gate before task completion
 // Spec: DETAILED_DESIGN.md §5.8
 // Event: TaskCompleted
-// Execution order: before clawless-pipeline.js
+// Execution order: before sh-pipeline.js
 // Target response time: < 30000ms
 "use strict";
 
@@ -13,9 +13,9 @@ const {
   allow,
   deny,
   appendEvidence,
-} = require("./lib/clawless-utils");
+} = require("./lib/sh-utils");
 
-const HOOK_NAME = "clawless-task-gate";
+const HOOK_NAME = "sh-task-gate";
 const PACKAGE_JSON = "package.json";
 
 // ---------------------------------------------------------------------------
