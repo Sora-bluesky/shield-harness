@@ -14,6 +14,7 @@ const {
   allow,
   deny,
   readSession,
+  writeSession,
   readYaml,
   appendEvidence,
   CLAWLESS_DIR,
@@ -159,6 +160,57 @@ function commandExists(cmd) {
     return true;
   } catch {
     return false;
+  }
+}
+
+// Priority weight for sorting (lower = higher priority)
+const PRIORITY_WEIGHT = { must: 0, should: 1, could: 2 };
+
+// Maximum auto-pickups per session (infinite loop guard)
+const MAX_AUTO_PICKUPS = 10;
+
+/**
+ * Find the next eligible task from backlog.yaml.
+ * Filters: status === "backlog", all depends_on are "done".
+ * Sorts: priority (must > should > could), then due_date ascending.
+ * @returns {{ id: string, intent: string, priority: string }|null}
+ */
+function findNextTask() {
+  try {
+    const backlog = readYaml(BACKLOG_FILE);
+    const tasks = backlog.tasks || [];
+
+    // Build status lookup for dependency checking
+    const statusMap = {};
+    for (const t of tasks) {
+      statusMap[t.id] = t.status;
+    }
+
+    // Filter candidates: backlog status + all deps done
+    const candidates = tasks.filter((t) => {
+      if (t.status !== "backlog") return false;
+      const deps = t.depends_on || [];
+      return deps.every((depId) => statusMap[depId] === "done");
+    });
+
+    if (candidates.length === 0) return null;
+
+    // Sort: priority ascending, then due_date ascending (null last)
+    candidates.sort((a, b) => {
+      const pa = PRIORITY_WEIGHT[a.priority] ?? 99;
+      const pb = PRIORITY_WEIGHT[b.priority] ?? 99;
+      if (pa !== pb) return pa - pb;
+
+      // due_date: null → Infinity for sorting
+      const da = a.due_date ? new Date(a.due_date).getTime() : Infinity;
+      const db = b.due_date ? new Date(b.due_date).getTime() : Infinity;
+      return da - db;
+    });
+
+    const next = candidates[0];
+    return { id: next.id, intent: next.intent, priority: next.priority };
+  } catch {
+    return null;
   }
 }
 
@@ -486,9 +538,62 @@ try {
       break;
     }
 
-    case "stg6_passed":
-      summary = `Task ${taskId} already completed (stg6_passed)`;
+    case "stg6_passed": {
+      // Auto-pickup next task (ADR-034)
+      if (!config.auto_pickup_next_task) {
+        summary = `Task ${taskId} already completed (stg6_passed)`;
+        break;
+      }
+
+      // Infinite loop guard
+      const session = readSession();
+      const pickupCount = session.auto_pickup_count || 0;
+      if (pickupCount >= MAX_AUTO_PICKUPS) {
+        summary = `Auto-pickup limit reached (${MAX_AUTO_PICKUPS}). Stopping.`;
+        break;
+      }
+
+      const nextTask = findNextTask();
+      if (!nextTask) {
+        summary = "All tasks completed or no eligible tasks found.";
+        break;
+      }
+
+      try {
+        // Update next task to in_progress
+        const nextBranch = `feature/${nextTask.id}`;
+        updateBacklog(nextTask.id, {
+          status: "in_progress",
+          stage_status: "stg0_passed",
+          start_date: today,
+          branch: nextBranch,
+          stg_history_push: { gate: "stg0", passed_at: timestamp },
+        });
+
+        // Create branch
+        try {
+          executeTrusted(nextTask.id, `git checkout -b "${nextBranch}"`);
+        } catch {
+          try {
+            executeTrusted(nextTask.id, `git checkout "${nextBranch}"`);
+          } catch {
+            // Already on branch
+          }
+        }
+
+        // Update session
+        writeSession({
+          ...session,
+          active_task_id: nextTask.id,
+          auto_pickup_count: pickupCount + 1,
+        });
+
+        summary = `Auto-pickup: starting ${nextTask.id} (${nextTask.intent}) [${nextTask.priority}]`;
+      } catch (err) {
+        summary = `Auto-pickup error: ${err.message}`;
+      }
       break;
+    }
 
     default:
       summary = `Unknown stage: ${stageStatus}`;
