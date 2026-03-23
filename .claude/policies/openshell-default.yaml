@@ -1,0 +1,65 @@
+# Shield Harness — OpenShell Default Policy Template
+# Schema: OpenShell Policy v1
+# Reference: ADR-037, https://docs.nvidia.com/openshell/latest/reference/policy-schema.html
+#
+# Usage:
+#   openshell sandbox create --policy .claude/policies/openshell-default.yaml -- claude
+#
+# Customize this template for your project's needs.
+# Static policies (filesystem, landlock, process) require sandbox recreation to change.
+# Network policies can be hot-reloaded: openshell policy set <name> --policy <file> --wait
+
+version: 1
+
+# --- Static (locked at sandbox creation) ---
+
+filesystem_policy:
+  include_workdir: true
+  read_only:
+    - /usr
+    - /lib
+    - /etc
+  read_write:
+    - /sandbox
+    - /tmp
+
+landlock:
+  compatibility: best_effort
+
+process:
+  run_as_user: sandbox
+  run_as_group: sandbox
+
+# --- Dynamic (hot-reloadable) ---
+
+network_policies:
+  anthropic_api:
+    name: anthropic-api
+    endpoints:
+      - host: api.anthropic.com
+        port: 443
+        access: full
+    binaries:
+      - path: /usr/local/bin/claude
+
+  github:
+    name: github
+    endpoints:
+      - host: github.com
+        port: 443
+        access: read-only
+      - host: "*.githubusercontent.com"
+        port: 443
+        access: read-only
+    binaries:
+      - path: /usr/bin/git
+
+  npm_registry:
+    name: npm-registry
+    endpoints:
+      - host: registry.npmjs.org
+        port: 443
+        access: read-only
+    binaries:
+      - path: /usr/bin/npm
+      - path: /usr/bin/node

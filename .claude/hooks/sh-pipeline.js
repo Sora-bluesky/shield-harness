@@ -17,6 +17,7 @@ const {
   writeSession,
   readYaml,
   appendEvidence,
+  commandExists,
   SH_DIR,
 } = require("./lib/sh-utils");
 
@@ -140,27 +141,6 @@ function formatCommitMsg(template, taskId, gate, intent) {
     .replace("{task_id}", taskId)
     .replace("{gate}", gate)
     .replace("{intent}", intent);
-}
-
-/**
- * Check if a command exists.
- * @param {string} cmd
- * @returns {boolean}
- */
-function commandExists(cmd) {
-  // Try 'which' (Unix/Git Bash) first, then 'where' (Windows cmd)
-  for (const checker of ["which", "where"]) {
-    try {
-      execSync(`${checker} ${cmd}`, {
-        encoding: "utf8",
-        stdio: ["pipe", "pipe", "pipe"],
-      });
-      return true;
-    } catch {
-      // Try next checker
-    }
-  }
-  return false;
 }
 
 // Priority weight for sorting (lower = higher priority)
@@ -635,5 +615,4 @@ module.exports = {
   executeTrusted,
   updateBacklog,
   formatCommitMsg,
-  commandExists,
 };
