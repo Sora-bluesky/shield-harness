@@ -29,8 +29,8 @@
 ## Important Commands
 
 ```powershell
-# Verify clawless setup
-pwsh ./scripts/verify-clawless-setup.ps1
+# Verify shield-harness setup
+pwsh ./scripts/verify-sh-setup.ps1
 
 # Git guard (manual scan)
 bash .githooks/pre-commit

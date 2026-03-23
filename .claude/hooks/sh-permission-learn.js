@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// clawless-permission-learn.js — Permission learning guard
+// sh-permission-learn.js — Permission learning guard
 // Spec: DETAILED_DESIGN.md §5.7
 // Event: PermissionRequest
 // Target response time: < 20ms
@@ -12,9 +12,9 @@ const {
   allow,
   deny,
   appendEvidence,
-} = require("./lib/clawless-utils");
+} = require("./lib/sh-utils");
 
-const HOOK_NAME = "clawless-permission-learn";
+const HOOK_NAME = "sh-permission-learn";
 const SETTINGS_FILE = path.join(".claude", "settings.json");
 const SETTINGS_LOCAL_FILE = path.join(".claude", "settings.local.json");
 const MAX_LEARNED_RULES = 100;

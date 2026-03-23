@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// clawless-output-control.js — Output truncation + token budget tracking
+// sh-output-control.js — Output truncation + token budget tracking
 // Spec: DETAILED_DESIGN.md §4.2
 // Hook event: PostToolUse
 // Matcher: "" (all tools)
@@ -12,13 +12,13 @@ const {
   allowWithResult,
   readSession,
   writeSession,
-} = require("./lib/clawless-utils");
+} = require("./lib/sh-utils");
 
 // ---------------------------------------------------------------------------
 // Constants
 // ---------------------------------------------------------------------------
 
-const HOOK_NAME = "clawless-output-control";
+const HOOK_NAME = "sh-output-control";
 
 // Truncation limits per tool (bytes)
 const TRUNCATION_LIMITS = {
@@ -64,7 +64,7 @@ function truncateOutput(output, toolName) {
   const head = output.slice(0, limits.head);
   const tail = output.slice(-limits.tail);
   const omitted = output.length - limits.head - limits.tail;
-  const notice = `\n\n--- [clawless-output-control] ${omitted} bytes omitted (${output.length} total → ${limits.head + limits.tail} retained) ---\n\n`;
+  const notice = `\n\n--- [sh-output-control] ${omitted} bytes omitted (${output.length} total → ${limits.head + limits.tail} retained) ---\n\n`;
 
   return {
     text: head + notice + tail,

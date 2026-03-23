@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// clawless-subagent.js — Subagent constraint injection
+// sh-subagent.js — Subagent constraint injection
 // Spec: DETAILED_DESIGN.md §5.6
 // Event: SubagentStart
 // Target response time: < 10ms
@@ -11,9 +11,9 @@ const {
   deny,
   readSession,
   appendEvidence,
-} = require("./lib/clawless-utils");
+} = require("./lib/sh-utils");
 
-const HOOK_NAME = "clawless-subagent";
+const HOOK_NAME = "sh-subagent";
 const SUBAGENT_BUDGET_RATIO = 0.25; // 25% cap per subagent
 
 // ---------------------------------------------------------------------------
@@ -58,7 +58,7 @@ try {
 
   // Inject constraints via additionalContext
   const constraints = [
-    "【Clawless サブエージェント制約】",
+    "【Shield Harness サブエージェント制約】",
     `- トークン予算: ${subagentBudget.toLocaleString()} tokens（セッション残量の 25%）`,
     "- ファイル書込: プロジェクトルート内のみ",
     "- ネットワーク: 禁止（WebFetch 不可）",

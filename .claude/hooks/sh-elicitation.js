@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// clawless-elicitation.js — Elicitation phishing & scope guard
+// sh-elicitation.js — Elicitation phishing & scope guard
 // Spec: DETAILED_DESIGN.md §5.5
 // Event: Elicitation
 // Target response time: < 20ms
@@ -13,12 +13,12 @@ const {
   deny,
   nfkcNormalize,
   appendEvidence,
-  CLAWLESS_DIR,
-} = require("./lib/clawless-utils");
+  SH_DIR,
+} = require("./lib/sh-utils");
 
-const HOOK_NAME = "clawless-elicitation";
+const HOOK_NAME = "sh-elicitation";
 const ALLOWED_MCP_FILE = path.join(
-  CLAWLESS_DIR,
+  SH_DIR,
   "config",
   "allowed-mcp-servers.json",
 );

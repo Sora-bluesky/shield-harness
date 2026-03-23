@@ -41,18 +41,16 @@ function copyDir(src, dest) {
 function init(profile) {
   const targetDir = process.cwd();
   const claudeDir = path.join(targetDir, ".claude");
-  const clawlessDir = path.join(targetDir, ".clawless");
+  const shieldHarnessDir = path.join(targetDir, ".shield-harness");
 
   // Check if already initialized
-  if (fs.existsSync(path.join(claudeDir, "hooks", "clawless-gate.js"))) {
-    console.error("Clawless is already initialized in this directory.");
-    console.error(
-      "To re-initialize, remove .claude/hooks/clawless-*.js first.",
-    );
+  if (fs.existsSync(path.join(claudeDir, "hooks", "sh-gate.js"))) {
+    console.error("Shield Harness is already initialized in this directory.");
+    console.error("To re-initialize, remove .claude/hooks/sh-*.js first.");
     process.exit(1);
   }
 
-  console.log(`Initializing Clawless (profile: ${profile})...`);
+  console.log(`Initializing Shield Harness (profile: ${profile})...`);
 
   // Copy hooks
   copyDir(HOOK_SRC, path.join(claudeDir, "hooks"));
@@ -66,11 +64,11 @@ function init(profile) {
   copyDir(RULES_SRC, path.join(claudeDir, "rules"));
   console.log("  [OK] rules/");
 
-  // Create .clawless runtime directories
-  fs.mkdirSync(path.join(clawlessDir, "config"), { recursive: true });
-  fs.mkdirSync(path.join(clawlessDir, "logs"), { recursive: true });
-  fs.mkdirSync(path.join(clawlessDir, "state"), { recursive: true });
-  console.log("  [OK] .clawless/");
+  // Create .shield-harness runtime directories
+  fs.mkdirSync(path.join(shieldHarnessDir, "config"), { recursive: true });
+  fs.mkdirSync(path.join(shieldHarnessDir, "logs"), { recursive: true });
+  fs.mkdirSync(path.join(shieldHarnessDir, "state"), { recursive: true });
+  console.log("  [OK] .shield-harness/");
 
   // Create default pipeline config
   const pipelineConfig = {
@@ -92,7 +90,11 @@ function init(profile) {
     blocked_notification_channel: null,
   };
 
-  const configPath = path.join(clawlessDir, "config", "pipeline-config.json");
+  const configPath = path.join(
+    shieldHarnessDir,
+    "config",
+    "pipeline-config.json",
+  );
   if (!fs.existsSync(configPath)) {
     fs.writeFileSync(
       configPath,
@@ -102,7 +104,7 @@ function init(profile) {
   }
 
   console.log("");
-  console.log(`Clawless initialized successfully (profile: ${profile}).`);
+  console.log(`Shield Harness initialized successfully (profile: ${profile}).`);
   console.log("Run 'claude' to start a secured session.");
 }
 
@@ -127,10 +129,10 @@ if (command === "init") {
   init(profile);
 } else {
   const pkg = require("../package.json");
-  console.log(`Clawless v${pkg.version}`);
+  console.log(`Shield Harness v${pkg.version}`);
   console.log("");
   console.log("Usage:");
-  console.log("  npx clawless init [--profile minimal|standard|strict]");
+  console.log("  npx shield-harness init [--profile minimal|standard|strict]");
   console.log("");
   console.log("Profiles:");
   console.log("  minimal   — Minimal config, approval-free");

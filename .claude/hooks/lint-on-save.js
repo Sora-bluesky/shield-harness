@@ -12,7 +12,7 @@
 
 const { execFileSync } = require("child_process");
 const path = require("path");
-const { readHookInput } = require("./lib/clawless-utils");
+const { readHookInput } = require("./lib/sh-utils");
 
 // --- Constants ---
 

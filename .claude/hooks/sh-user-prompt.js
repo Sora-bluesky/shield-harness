@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// clawless-user-prompt.js — User prompt injection scanner
+// sh-user-prompt.js — User prompt injection scanner
 // Spec: DETAILED_DESIGN.md §5.4
 // Event: UserPromptSubmit
 // Target response time: < 30ms
@@ -13,9 +13,9 @@ const {
   loadPatterns,
   readSession,
   appendEvidence,
-} = require("./lib/clawless-utils");
+} = require("./lib/sh-utils");
 
-const HOOK_NAME = "clawless-user-prompt";
+const HOOK_NAME = "sh-user-prompt";
 
 // Severity hierarchy for channel boost
 const SEVERITY_LEVELS = ["low", "medium", "high", "critical"];
