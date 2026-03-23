@@ -33,11 +33,12 @@ npx shield-harness init [--profile minimal|standard|strict]
 
 3 層防御モデル:
 
-| 層      | 防御           | 実装                                 |
-| ------- | -------------- | ------------------------------------ |
-| Layer 1 | 権限制御       | `settings.json` の deny/allow ルール |
-| Layer 2 | フック防御     | 22 の Node.js フックスクリプト       |
-| Layer 3 | サンドボックス | OS レベルのプロセス隔離              |
+| 層       | 防御                   | 実装                                                          |
+| -------- | ---------------------- | ------------------------------------------------------------- |
+| Layer 1  | 権限制御               | `settings.json` の deny/allow ルール                          |
+| Layer 2  | フック防御             | 22 の Node.js フックスクリプト                                |
+| Layer 3  | サンドボックス         | Claude Code ネイティブサンドボックス（bubblewrap / Seatbelt） |
+| Layer 3b | コンテナサンドボックス | NVIDIA OpenShell（オプション、Docker 環境）                   |
 
 ## プロファイル
 
@@ -82,6 +83,49 @@ STG ゲート駆動の自動化パイプライン:
 | :--: | :--: | :--: | :--: | :--: | :------: | :-------: |
 | 要件 | 設計 | 実装 | 検証 |  CI  | コミット | PR/マージ |
 
+## Layer 3: サンドボックス（OS レベル隔離）
+
+Layer 3 は Claude Code 組み込みのサンドボックスに依存します。Shield Harness は独自のサンドボックスを実装せず、サンドボックスが利用できない環境では Layer 1・2 で補填します。
+
+### プラットフォーム対応状況
+
+| OS                 | サンドボックス | 技術               | 状態                                    |
+| ------------------ | -------------- | ------------------ | --------------------------------------- |
+| macOS              | 対応           | Seatbelt           | 自動有効化                              |
+| Linux              | 対応           | bubblewrap + socat | `sudo apt-get install bubblewrap socat` |
+| WSL2               | 対応           | bubblewrap + socat | Linux と同一                            |
+| WSL1               | 非対応         | —                  | カーネル機能不足                        |
+| Windows ネイティブ | 非対応         | —                  | Anthropic 側で対応予定                  |
+
+### Windows ネイティブ: セキュリティギャップと補填策
+
+Windows ネイティブでは Claude Code のサンドボックス機能（`sandbox.filesystem.*`、`sandbox.network.*`、`sandbox.autoAllow`）が動作しません。Shield Harness は以下で補填します:
+
+- **Layer 1**: `permissions.deny` に Windows 固有コマンド（`type`、`del`、`format`、`Invoke-WebRequest`）を追加
+- **Layer 2**: 22 フック全てが正常動作 — インジェクション検出、証跡記録、ゲートチェックは完全に機能
+- **制約**: 子プロセスのファイルアクセスを OS レベルで制限できず、raw ソケット通信はコマンドパターンマッチをバイパス可能
+
+エンタープライズ環境では Windows Firewall の送信規則によるプロセスレベルのネットワーク制御を推奨します。
+
+### Layer 3b: NVIDIA OpenShell（オプション）
+
+[NVIDIA OpenShell](https://github.com/NVIDIA/OpenShell)（Apache 2.0）は Docker 上で AI エージェントに**カーネルレベルの隔離**を提供します:
+
+| メカニズム   | 対象             | 保護内容                |
+| ------------ | ---------------- | ----------------------- |
+| Landlock LSM | ファイルシステム | denyWrite / denyRead    |
+| Seccomp BPF  | システムコール   | ソケット / プロセス制限 |
+| Network NS   | ネットワーク     | ドメインレベルの deny   |
+
+Windows ユーザーにとっての主なメリット:
+
+- ポリシーがエージェントプロセスの**外部**に存在 — エージェント自身がガードレールを無効化できない
+- Docker Desktop + WSL2 バックエンド（一般的な Windows 開発環境）で動作
+- 残余リスクを 5% から 1% 未満に低減
+- 自由に取り外し可能 — コンテナを停止すれば Shield Harness は Layer 1-2 にフォールバック
+
+> **ステータス**: Alpha 統合（ADR-037）。ドキュメントのみ — ランタイム依存なし。
+
 ## チャンネル連携
 
 Claude Code Channels (Telegram/Discord) との連携をサポート。
@@ -98,6 +142,18 @@ Claude Code Channels (Telegram/Discord) との連携をサポート。
 | GitHub CLI   | 2.x (`gh`)   | PR 作成・マージ自動化    | 任意           |
 
 OS: Windows ネイティブファースト（Git Bash 環境）、WSL2/Linux 互換。
+
+## 参考プロジェクト
+
+Shield Harness は 40 以上の Claude Code セキュリティプロジェクトを調査して設計されました。主な参考:
+
+| プロジェクト                                                       | 影響を受けた点                                                                                                       |
+| ------------------------------------------------------------------ | -------------------------------------------------------------------------------------------------------------------- |
+| [claude-guardrails](https://github.com/dwarvesf/claude-guardrails) | npx install パターン、50+ インジェクションパターン、deny ルールカタログ                                              |
+| [claude-warden](https://github.com/johnzfitch/claude-warden)       | 3 段階プロファイル、トークンガバナンス（quiet-inject、output-control）、ConfigChange 自己保護                        |
+| [claude-hooks](https://github.com/lasso-security/claude-hooks)     | 5 カテゴリインジェクション検出、YAML パターン定義                                                                    |
+| [tobari](https://github.com/Sora-bluesky/tobari)                   | 22 フックアーキテクチャ、SHA-256 ハッシュチェーン証跡、STG ゲートパイプライン、PermissionRequest 適応学習            |
+| OpenClaw (ECC)                                                     | 18 件の CVE/セキュリティ問題からの教訓（ゲートウェイ認証、認証情報管理、シムリンクトラバーサル）、チャンネル連携設計 |
 
 ## ライセンス
 
