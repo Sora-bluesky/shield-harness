@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// clawless-gate.js — Destructive command blocker + hook evasion defense
+// sh-gate.js — Destructive command blocker + hook evasion defense
 // Spec: DETAILED_DESIGN.md §3.2
 // Event: PreToolUse (Bash)
 // Target response time: < 50ms
@@ -12,7 +12,7 @@ const {
   nfkcNormalize,
   normalizePath,
   appendEvidence,
-} = require("./lib/clawless-utils");
+} = require("./lib/sh-utils");
 
 // ---------------------------------------------------------------------------
 // Pattern Arrays (§3.2 — all 7 attack vectors + destructive commands)
@@ -101,13 +101,10 @@ const WINDOWS_PATTERNS = [
 
 // E-8: Pipeline environment variable spoofing (§8.1)
 const PIPELINE_SPOOFING_PATTERNS = [
-  [
-    /export\s+CLAWLESS_PIPELINE/,
-    "export CLAWLESS_PIPELINE (pipeline env spoofing)",
-  ],
-  [/CLAWLESS_PIPELINE=1/, "CLAWLESS_PIPELINE=1 (pipeline env spoofing)"],
-  [/env\s+CLAWLESS_PIPELINE/, "env CLAWLESS_PIPELINE (pipeline env spoofing)"],
-  [/set\s+CLAWLESS_PIPELINE/, "set CLAWLESS_PIPELINE (pipeline env spoofing)"],
+  [/export\s+SH_PIPELINE/, "export SH_PIPELINE (pipeline env spoofing)"],
+  [/SH_PIPELINE=1/, "SH_PIPELINE=1 (pipeline env spoofing)"],
+  [/env\s+SH_PIPELINE/, "env SH_PIPELINE (pipeline env spoofing)"],
+  [/set\s+SH_PIPELINE/, "set SH_PIPELINE (pipeline env spoofing)"],
 ];
 
 // E-2: Path obfuscation (checked after normalization)
@@ -195,40 +192,40 @@ try {
   let match = matchPatterns(normalizedCommand, DESTRUCTIVE_PATTERNS);
   if (match) {
     recordEvidence(
-      "clawless-gate",
+      "sh-gate",
       "deny",
       match.label,
       normalizedCommand,
       input.sessionId,
     );
-    deny(`[clawless-gate] Blocked: ${match.label}`);
+    deny(`[sh-gate] Blocked: ${match.label}`);
   }
 
   // Step 4: Tool switching detection (E-1 defense)
   match = matchPatterns(normalizedCommand, TOOL_SWITCHING_PATTERNS);
   if (match) {
     recordEvidence(
-      "clawless-gate",
+      "sh-gate",
       "deny",
       match.label,
       normalizedCommand,
       input.sessionId,
     );
-    deny(`[clawless-gate] Blocked: ${match.label}. Use the Edit tool instead.`);
+    deny(`[sh-gate] Blocked: ${match.label}. Use the Edit tool instead.`);
   }
 
   // Step 5: sed dangerous modifier detection (E-4 defense)
   match = matchPatterns(normalizedCommand, SED_DANGER_PATTERNS);
   if (match) {
     recordEvidence(
-      "clawless-gate",
+      "sh-gate",
       "deny",
       match.label,
       normalizedCommand,
       input.sessionId,
     );
     deny(
-      `[clawless-gate] Blocked: ${match.label}. sed e/w modifiers are prohibited.`,
+      `[sh-gate] Blocked: ${match.label}. sed e/w modifiers are prohibited.`,
     );
   }
 
@@ -236,14 +233,14 @@ try {
   match = matchPatterns(normalizedCommand, DYNAMIC_LINKER_PATTERNS);
   if (match) {
     recordEvidence(
-      "clawless-gate",
+      "sh-gate",
       "deny",
       match.label,
       normalizedCommand,
       input.sessionId,
     );
     deny(
-      `[clawless-gate] Blocked: ${match.label}. Dynamic linker manipulation is prohibited.`,
+      `[sh-gate] Blocked: ${match.label}. Dynamic linker manipulation is prohibited.`,
     );
   }
 
@@ -251,14 +248,14 @@ try {
   match = matchPatterns(normalizedCommand, CONFIG_MODIFY_PATTERNS);
   if (match) {
     recordEvidence(
-      "clawless-gate",
+      "sh-gate",
       "deny",
       match.label,
       normalizedCommand,
       input.sessionId,
     );
     deny(
-      `[clawless-gate] Blocked: ${match.label}. Modifying .claude/ config is prohibited.`,
+      `[sh-gate] Blocked: ${match.label}. Modifying .claude/ config is prohibited.`,
     );
   }
 
@@ -266,14 +263,14 @@ try {
   match = matchPatterns(normalizedCommand, PATH_HIJACK_PATTERNS);
   if (match) {
     recordEvidence(
-      "clawless-gate",
+      "sh-gate",
       "deny",
       match.label,
       normalizedCommand,
       input.sessionId,
     );
     deny(
-      `[clawless-gate] Blocked: ${match.label}. PATH/environment manipulation is prohibited.`,
+      `[sh-gate] Blocked: ${match.label}. PATH/environment manipulation is prohibited.`,
     );
   }
 
@@ -281,14 +278,14 @@ try {
   match = matchPatterns(normalizedCommand, WINDOWS_PATTERNS);
   if (match) {
     recordEvidence(
-      "clawless-gate",
+      "sh-gate",
       "deny",
       match.label,
       normalizedCommand,
       input.sessionId,
     );
     deny(
-      `[clawless-gate] Blocked: ${match.label}. Windows shell attack vector detected.`,
+      `[sh-gate] Blocked: ${match.label}. Windows shell attack vector detected.`,
     );
   }
 
@@ -296,14 +293,14 @@ try {
   match = matchPatterns(normalizedCommand, PIPELINE_SPOOFING_PATTERNS);
   if (match) {
     recordEvidence(
-      "clawless-gate",
+      "sh-gate",
       "deny",
       match.label,
       normalizedCommand,
       input.sessionId,
     );
     deny(
-      `[clawless-gate] Blocked: ${match.label}. Pipeline environment spoofing detected.`,
+      `[sh-gate] Blocked: ${match.label}. Pipeline environment spoofing detected.`,
     );
   }
 
@@ -311,13 +308,13 @@ try {
   match = matchPatterns(normalizedCommand, PATH_OBFUSCATION_PATTERNS);
   if (match) {
     recordEvidence(
-      "clawless-gate",
+      "sh-gate",
       "deny",
       match.label,
       normalizedCommand,
       input.sessionId,
     );
-    deny(`[clawless-gate] Blocked: ${match.label}. Path obfuscation detected.`);
+    deny(`[sh-gate] Blocked: ${match.label}. Path obfuscation detected.`);
   }
 
   // Step 10: All checks passed — allow
@@ -326,7 +323,7 @@ try {
   // fail-close: any uncaught error = deny (§2.3b)
   process.stdout.write(
     JSON.stringify({
-      reason: `Hook error (clawless-gate): ${err.message}`,
+      reason: `Hook error (sh-gate): ${err.message}`,
     }),
   );
   process.exit(2);

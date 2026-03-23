@@ -1,6 +1,6 @@
-# Clawless Implementation Context
+# Shield Harness Implementation Context
 
-> Clawless = Claude Code の `.claude/` ディレクトリ構造によるセキュリティハーネス（hooks + rules + skills + settings.json）
+> Shield Harness = Claude Code の `.claude/` ディレクトリ構造によるセキュリティハーネス（hooks + rules + skills + settings.json）
 
 ## Design Documents（実装時に必ず参照）
 
@@ -21,7 +21,7 @@ Phase A（基盤 — 最初に実装）:
   ↓ 他 ADR の前提
 
 Phase B（パイプライン）:
-  ADR-031: clawless-pipeline.sh（STG ゲート駆動）
+  ADR-031: sh-pipeline.sh（STG ゲート駆動）
   ADR-032: 承認レスモード（approval_free） ← 並列可
   ADR-035: バイリンガル README + sync-readme.ps1 ← 並列可
   ↓
@@ -33,8 +33,8 @@ Phase C（自律ループ）:
 ## Technical Constraints
 
 - **Hook language**: pure bash + jq（ミリ秒応答必須）。複雑ロジックのみ Node.js CommonJS
-- **Hook protocol**: exit 0 = allow, exit 2 = deny（stdout に JSON）。deny() は clawless-utils.sh 経由
-- **Target**: 22 hook scripts + lib/clawless-utils.sh + injection-patterns.json
+- **Hook protocol**: exit 0 = allow, exit 2 = deny（stdout に JSON）。deny() は sh-utils.sh 経由
+- **Target**: 22 hook scripts + lib/sh-utils.sh + injection-patterns.json
 - **External deps**: yq (Go), jq 1.6+, node (NFKC), pwsh (sync scripts, bash fallback あり), gh (optional)
 - **OS**: Windows ネイティブファースト（Git Bash 環境）。WSL2/Linux 互換
 - **Trusted Operation**: pipeline の git 操作は bash 子プロセスとして直接実行（フックエンジン非経由）
@@ -47,30 +47,30 @@ Phase C（自律ループ）:
 ├─ settings.json
 ├─ settings.local.json
 ├─ hooks/
-│   ├─ clawless-permission.sh
-│   ├─ clawless-permission-learn.sh
-│   ├─ clawless-gate.sh
-│   ├─ clawless-injection-guard.sh
-│   ├─ clawless-user-prompt.sh
-│   ├─ clawless-evidence.sh
-│   ├─ clawless-output-control.sh
-│   ├─ clawless-quiet-inject.sh
-│   ├─ clawless-circuit-breaker.sh
-│   ├─ clawless-task-gate.sh
-│   ├─ clawless-precompact.sh
-│   ├─ clawless-postcompact.sh
-│   ├─ clawless-instructions.sh
-│   ├─ clawless-session-start.sh
-│   ├─ clawless-session-end.sh
-│   ├─ clawless-config-guard.sh
-│   ├─ clawless-subagent.sh
-│   ├─ clawless-dependency-guard.sh
-│   ├─ clawless-elicitation.sh
-│   ├─ clawless-worktree.sh
-│   ├─ clawless-data-boundary.sh
-│   ├─ clawless-pipeline.sh
+│   ├─ sh-permission.sh
+│   ├─ sh-permission-learn.sh
+│   ├─ sh-gate.sh
+│   ├─ sh-injection-guard.sh
+│   ├─ sh-user-prompt.sh
+│   ├─ sh-evidence.sh
+│   ├─ sh-output-control.sh
+│   ├─ sh-quiet-inject.sh
+│   ├─ sh-circuit-breaker.sh
+│   ├─ sh-task-gate.sh
+│   ├─ sh-precompact.sh
+│   ├─ sh-postcompact.sh
+│   ├─ sh-instructions.sh
+│   ├─ sh-session-start.sh
+│   ├─ sh-session-end.sh
+│   ├─ sh-config-guard.sh
+│   ├─ sh-subagent.sh
+│   ├─ sh-dependency-guard.sh
+│   ├─ sh-elicitation.sh
+│   ├─ sh-worktree.sh
+│   ├─ sh-data-boundary.sh
+│   ├─ sh-pipeline.sh
 │   └─ lib/
-│       └─ clawless-utils.sh
+│       └─ sh-utils.sh
 ├─ patterns/
 │   └─ injection-patterns.json
 ├─ rules/
@@ -81,7 +81,7 @@ Phase C（自律ループ）:
     ├─ evidence-ledger.jsonl
     └─ instructions-hashes.json
 
-.clawless/
+.shield-harness/
 ├─ session.json
 ├─ config/
 │   └─ pipeline-config.json

@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// clawless-instructions.js — Rule file integrity monitoring
+// sh-instructions.js — Rule file integrity monitoring
 // Spec: DETAILED_DESIGN.md §5.8
 // Event: InstructionsLoaded
 // Target response time: < 200ms
@@ -12,9 +12,9 @@ const {
   allow,
   sha256,
   appendEvidence,
-} = require("./lib/clawless-utils");
+} = require("./lib/sh-utils");
 
-const HOOK_NAME = "clawless-instructions";
+const HOOK_NAME = "sh-instructions";
 const CLAUDE_MD = "CLAUDE.md";
 const RULES_DIR = path.join(".claude", "rules");
 const HASHES_FILE = path.join(".claude", "logs", "instructions-hashes.json");

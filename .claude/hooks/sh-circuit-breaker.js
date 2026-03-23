@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// clawless-circuit-breaker.js — Retry loop before agent stops
+// sh-circuit-breaker.js — Retry loop before agent stops
 // Spec: DETAILED_DESIGN.md §5.2
 // Event: Stop
 // Target response time: < 50ms
@@ -12,9 +12,9 @@ const {
   readSession,
   writeSession,
   appendEvidence,
-} = require("./lib/clawless-utils");
+} = require("./lib/sh-utils");
 
-const HOOK_NAME = "clawless-circuit-breaker";
+const HOOK_NAME = "sh-circuit-breaker";
 const MAX_RETRIES = 3;
 
 // ---------------------------------------------------------------------------
@@ -45,7 +45,7 @@ try {
     }
 
     allow(
-      "[clawless-circuit-breaker] stop_hook_active detected — allowing stop to prevent loop.",
+      "[sh-circuit-breaker] stop_hook_active detected — allowing stop to prevent loop.",
     );
   }
 
@@ -72,7 +72,7 @@ try {
     }
 
     allow(
-      `[clawless-circuit-breaker] リトライ上限（${MAX_RETRIES}回）に到達しました。停止を許可します。`,
+      `[sh-circuit-breaker] リトライ上限（${MAX_RETRIES}回）に到達しました。停止を許可します。`,
     );
   }
 
@@ -95,7 +95,7 @@ try {
   }
 
   deny(
-    `[clawless-circuit-breaker] リトライ ${currentRetry}/${MAX_RETRIES}。まだ停止しないでください。別のアプローチを試してください。`,
+    `[sh-circuit-breaker] リトライ ${currentRetry}/${MAX_RETRIES}。まだ停止しないでください。別のアプローチを試してください。`,
   );
 } catch (_err) {
   // Control hook — fail-open (allow stop on error)
