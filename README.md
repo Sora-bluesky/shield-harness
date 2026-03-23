@@ -122,7 +122,7 @@ Key benefits for Windows users:
 - Reduces residual risk from 5% to <1%
 - Freely removable — stop the container and Shield Harness falls back to Layer 1-2
 
-> **Status**: Alpha integration (ADR-037). Documentation only — no runtime dependency yet.
+> **Status**: Alpha integration (ADR-037). Detection + policy template + version tracking active. OpenShell is Alpha (v0.0.13) — APIs may change with future releases.
 
 ## Channel Integration
 
