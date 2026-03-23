@@ -11,6 +11,7 @@ const {
   allow,
   sha256,
   appendEvidence,
+  readSession,
   EVIDENCE_FILE,
 } = require("./lib/clawless-utils");
 const fs = require("fs");
@@ -108,6 +109,15 @@ try {
   const input = readHookInput();
   const { hookType, toolName, toolInput, toolResult, sessionId } = input;
 
+  // Check channel source for evidence metadata (§8.6.3)
+  let isChannel = false;
+  try {
+    const session = readSession();
+    isChannel = session.source === "channel";
+  } catch {
+    // Session read failure is non-blocking for evidence
+  }
+
   // Build evidence entry
   const inputStr = JSON.stringify(toolInput);
   const resultStr =
@@ -123,6 +133,7 @@ try {
     decision: "allow",
     hook: HOOK_NAME,
     category: null,
+    is_channel: isChannel,
     session_id: sessionId,
   };
 
