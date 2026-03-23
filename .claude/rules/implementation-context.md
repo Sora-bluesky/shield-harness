@@ -21,7 +21,7 @@ Phase A（基盤 — 最初に実装）:
   ↓ 他 ADR の前提
 
 Phase B（パイプライン）:
-  ADR-031: sh-pipeline.sh（STG ゲート駆動）
+  ADR-031: sh-pipeline.js（STG ゲート駆動）
   ADR-032: 承認レスモード（approval_free） ← 並列可
   ADR-035: バイリンガル README + sync-readme.ps1 ← 並列可
   ↓
@@ -32,10 +32,10 @@ Phase C（自律ループ）:
 
 ## Technical Constraints
 
-- **Hook language**: pure bash + jq（ミリ秒応答必須）。複雑ロジックのみ Node.js CommonJS
-- **Hook protocol**: exit 0 = allow, exit 2 = deny（stdout に JSON）。deny() は sh-utils.sh 経由
-- **Target**: 22 hook scripts + lib/sh-utils.sh + injection-patterns.json
-- **External deps**: yq (Go), jq 1.6+, node (NFKC), pwsh (sync scripts, bash fallback あり), gh (optional)
+- **Hook language**: Node.js CommonJS（ミリ秒応答必須）。共通ユーティリティは lib/sh-utils.js
+- **Hook protocol**: exit 0 = allow, exit 2 = deny（stdout に JSON）。deny() は sh-utils.js 経由
+- **Target**: 23 hook scripts (22 sh-\* + lint-on-save) + lib/sh-utils.js + injection-patterns.json
+- **External deps**: node 18+ (CommonJS hooks), pwsh (sync scripts, bash fallback あり), gh (optional)
 - **OS**: Windows ネイティブファースト（Git Bash 環境）。WSL2/Linux 互換
 - **Trusted Operation**: pipeline の git 操作は bash 子プロセスとして直接実行（フックエンジン非経由）
 - **fail-close**: 安全条件を確認できない場合は exit 2 で停止
@@ -46,37 +46,57 @@ Phase C（自律ループ）:
 .claude/
 ├─ settings.json
 ├─ settings.local.json
+├─ agents/
+│   └─ general-purpose.md
 ├─ hooks/
-│   ├─ sh-permission.sh
-│   ├─ sh-permission-learn.sh
-│   ├─ sh-gate.sh
-│   ├─ sh-injection-guard.sh
-│   ├─ sh-user-prompt.sh
-│   ├─ sh-evidence.sh
-│   ├─ sh-output-control.sh
-│   ├─ sh-quiet-inject.sh
-│   ├─ sh-circuit-breaker.sh
-│   ├─ sh-task-gate.sh
-│   ├─ sh-precompact.sh
-│   ├─ sh-postcompact.sh
-│   ├─ sh-instructions.sh
-│   ├─ sh-session-start.sh
-│   ├─ sh-session-end.sh
-│   ├─ sh-config-guard.sh
-│   ├─ sh-subagent.sh
-│   ├─ sh-dependency-guard.sh
-│   ├─ sh-elicitation.sh
-│   ├─ sh-worktree.sh
-│   ├─ sh-data-boundary.sh
-│   ├─ sh-pipeline.sh
+│   ├─ sh-permission.js
+│   ├─ sh-permission-learn.js
+│   ├─ sh-gate.js
+│   ├─ sh-injection-guard.js
+│   ├─ sh-user-prompt.js
+│   ├─ sh-evidence.js
+│   ├─ sh-output-control.js
+│   ├─ sh-quiet-inject.js
+│   ├─ sh-circuit-breaker.js
+│   ├─ sh-task-gate.js
+│   ├─ sh-precompact.js
+│   ├─ sh-postcompact.js
+│   ├─ sh-instructions.js
+│   ├─ sh-session-start.js
+│   ├─ sh-session-end.js
+│   ├─ sh-config-guard.js
+│   ├─ sh-subagent.js
+│   ├─ sh-dep-audit.js
+│   ├─ sh-elicitation.js
+│   ├─ sh-worktree.js
+│   ├─ sh-data-boundary.js
+│   ├─ sh-pipeline.js
+│   ├─ lint-on-save.js
 │   └─ lib/
-│       └─ sh-utils.sh
+│       └─ sh-utils.js
 ├─ patterns/
 │   └─ injection-patterns.json
 ├─ rules/
-│   ├─ security.md
+│   ├─ binding-governance.md
+│   ├─ channel-security.md
 │   ├─ coding-principles.md
-│   └─ channel-security.md
+│   ├─ dev-environment.md
+│   ├─ implementation-context.md
+│   ├─ language.md
+│   ├─ security.md
+│   └─ testing.md
+├─ skills/
+│   ├─ checkpointing/
+│   ├─ docs-sync/
+│   ├─ handoff/
+│   ├─ init/
+│   ├─ plan/
+│   ├─ simplify/
+│   ├─ startproject/
+│   ├─ tdd/
+│   ├─ team-implement/
+│   ├─ team-review/
+│   └─ test-coverage-improver/
 └─ logs/
     ├─ evidence-ledger.jsonl
     └─ instructions-hashes.json
