@@ -1,12 +1,12 @@
 #!/usr/bin/env node
-// clawless-permission.js — 4-category tool governance (Tier 2)
+// sh-permission.js — 4-category tool governance (Tier 2)
 // Spec: DETAILED_DESIGN.md §3.1
 // Hook event: PreToolUse
 // Matcher: Bash|Edit|Write|Read|WebFetch|MCP
 // Target response time: < 50ms
 "use strict";
 
-const { readHookInput, allow, deny } = require("./lib/clawless-utils");
+const { readHookInput, allow, deny } = require("./lib/sh-utils");
 
 // ---------------------------------------------------------------------------
 // Category Constants
@@ -133,7 +133,7 @@ try {
 
     case CATEGORY.EXECUTION:
       // Category 3: allow with context for awareness
-      allow(`[clawless-permission] Category 3 (execution): ${label}`);
+      allow(`[sh-permission] Category 3 (execution): ${label}`);
       break;
 
     case CATEGORY.WRITE:
@@ -143,14 +143,14 @@ try {
 
     default:
       // Unknown category — fail-close
-      deny("Unknown category in clawless-permission");
+      deny("Unknown category in sh-permission");
       break;
   }
 } catch (err) {
   // fail-close: any uncaught error = deny
   process.stdout.write(
     JSON.stringify({
-      reason: `Hook error (clawless-permission): ${err.message}`,
+      reason: `Hook error (sh-permission): ${err.message}`,
     }),
   );
   process.exit(2);

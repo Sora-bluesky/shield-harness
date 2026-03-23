@@ -1,16 +1,12 @@
 #!/usr/bin/env node
-// clawless-quiet-inject.js — Auto-inject quiet flags to save tokens
+// sh-quiet-inject.js — Auto-inject quiet flags to save tokens
 // Spec: DETAILED_DESIGN.md §3.5
 // Hook event: PreToolUse
 // Matcher: Bash
 // Target response time: < 10ms
 "use strict";
 
-const {
-  readHookInput,
-  allow,
-  allowWithUpdate,
-} = require("./lib/clawless-utils");
+const { readHookInput, allow, allowWithUpdate } = require("./lib/sh-utils");
 
 // ---------------------------------------------------------------------------
 // Quiet Injection Rules

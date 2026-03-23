@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// clawless-precompact.js — Pre-compaction state backup & context injection
+// sh-precompact.js — Pre-compaction state backup & context injection
 // Spec: DETAILED_DESIGN.md §5.8
 // Event: PreCompact
 // Matcher: auto
@@ -14,11 +14,11 @@ const {
   readSession,
   appendEvidence,
   SESSION_FILE,
-  CLAWLESS_DIR,
-} = require("./lib/clawless-utils");
+  SH_DIR,
+} = require("./lib/sh-utils");
 
-const HOOK_NAME = "clawless-precompact";
-const BACKUP_DIR = path.join(CLAWLESS_DIR, "compact-backup");
+const HOOK_NAME = "sh-precompact";
+const BACKUP_DIR = path.join(SH_DIR, "compact-backup");
 
 // ---------------------------------------------------------------------------
 // Backup Logic
@@ -46,7 +46,7 @@ function backupSessionState() {
 function buildContextOutput(session) {
   const parts = [];
 
-  parts.push("=== Clawless Pre-Compaction Snapshot ===");
+  parts.push("=== Shield Harness Pre-Compaction Snapshot ===");
 
   // Session state
   if (session.session_start) {

@@ -1,4 +1,4 @@
-# Clawless — Claude Code Security Harness
+# Shield Harness — Claude Code Security Harness
 
 > Claude Code の .claude/ ディレクトリ構造によるセキュリティハーネス。hooks + rules + permissions + sandbox の多層防御でエージェントを統制する。
 
@@ -6,7 +6,7 @@
 
 ```
 ADR-033 → backlog.yaml + sync-project-views (基盤)
-ADR-031 → clawless-pipeline.sh (STG ゲート駆動パイプライン)
+ADR-031 → sh-pipeline.sh (STG ゲート駆動パイプライン)
 ADR-032 → 承認レスモード
 ADR-034 → 自律タスクループ
 ADR-035 → バイリンガルドキュメント

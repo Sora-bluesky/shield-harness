@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// clawless-worktree.js — Worktree security propagation & evidence merge
+// sh-worktree.js — Worktree security propagation & evidence merge
 // Spec: DETAILED_DESIGN.md §5.8
 // Events: WorktreeCreate, WorktreeRemove
 // Target response time: < 200ms
@@ -13,9 +13,9 @@ const {
   deny,
   appendEvidence,
   EVIDENCE_FILE,
-} = require("./lib/clawless-utils");
+} = require("./lib/sh-utils");
 
-const HOOK_NAME = "clawless-worktree";
+const HOOK_NAME = "sh-worktree";
 
 // Files/directories to copy to worktree
 const COPY_TARGETS = [
@@ -30,11 +30,11 @@ const COPY_TARGETS = [
 const COPY_DIRS = [
   {
     src: path.join(".claude", "hooks"),
-    filter: (f) => f.startsWith("clawless-") && f.endsWith(".js"),
+    filter: (f) => f.startsWith("sh-") && f.endsWith(".js"),
   },
   {
     src: path.join(".claude", "hooks", "lib"),
-    filter: (f) => f === "clawless-utils.js",
+    filter: (f) => f === "sh-utils.js",
   },
   { src: path.join(".claude", "rules"), filter: (f) => f.endsWith(".md") },
 ];
@@ -77,7 +77,7 @@ function copyDirToWorktree(srcDir, filter, worktreePath) {
 }
 
 /**
- * Propagate Clawless security config to a worktree.
+ * Propagate Shield Harness security config to a worktree.
  * @param {string} worktreePath
  * @returns {number} Number of files copied
  */
@@ -114,7 +114,7 @@ function propagateConfig(worktreePath) {
 function mergeEvidence(worktreePath) {
   const worktreeLedger = path.join(
     worktreePath,
-    ".clawless",
+    ".shield-harness",
     "logs",
     "evidence-ledger.jsonl",
   );
@@ -175,7 +175,7 @@ try {
     }
 
     allow(
-      `[${HOOK_NAME}] Clawless 設定を worktree にコピーしました (${filesCopied} files)`,
+      `[${HOOK_NAME}] Shield Harness 設定を worktree にコピーしました (${filesCopied} files)`,
     );
   }
 

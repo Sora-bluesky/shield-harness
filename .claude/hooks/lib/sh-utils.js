@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// clawless-utils.js — Shared utilities for all Clawless hooks (Node.js)
+// sh-utils.js — Shared utilities for all Shield Harness hooks (Node.js)
 // Spec: DETAILED_DESIGN.md §2.2b
 "use strict";
 
@@ -9,9 +9,9 @@ const crypto = require("crypto");
 
 // --- Constants ---
 
-const CLAWLESS_DIR = ".clawless";
-const EVIDENCE_FILE = path.join(CLAWLESS_DIR, "logs", "evidence-ledger.jsonl");
-const SESSION_FILE = path.join(CLAWLESS_DIR, "session.json");
+const SH_DIR = ".shield-harness";
+const EVIDENCE_FILE = path.join(SH_DIR, "logs", "evidence-ledger.jsonl");
+const SESSION_FILE = path.join(SH_DIR, "session.json");
 const PATTERNS_FILE = path.join(
   ".claude",
   "patterns",
@@ -202,7 +202,7 @@ function readYaml(filePath) {
  */
 function loadPatterns() {
   if (!fs.existsSync(PATTERNS_FILE)) {
-    deny("injection-patterns.json not found. Run npx clawless init.");
+    deny("injection-patterns.json not found. Run npx shield-harness init.");
   }
   try {
     return JSON.parse(fs.readFileSync(PATTERNS_FILE, "utf8"));
@@ -213,7 +213,7 @@ function loadPatterns() {
 
 module.exports = {
   // Constants
-  CLAWLESS_DIR,
+  SH_DIR,
   EVIDENCE_FILE,
   SESSION_FILE,
   PATTERNS_FILE,

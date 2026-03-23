@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// clawless-data-boundary.js — Production data boundary guard + jurisdiction tracking
+// sh-data-boundary.js — Production data boundary guard + jurisdiction tracking
 // Spec: DETAILED_DESIGN.md §3.4
 // Hook event: PreToolUse
 // Matcher: Bash|WebFetch
@@ -14,19 +14,16 @@ const {
   deny,
   readSession,
   appendEvidence,
-} = require("./lib/clawless-utils");
+} = require("./lib/sh-utils");
 
 // ---------------------------------------------------------------------------
 // Config Paths
 // ---------------------------------------------------------------------------
 
-const CLAWLESS_CONFIG_DIR = path.join(".clawless", "config");
-const PRODUCTION_HOSTS_FILE = path.join(
-  CLAWLESS_CONFIG_DIR,
-  "production-hosts.json",
-);
+const SH_CONFIG_DIR = path.join(".shield-harness", "config");
+const PRODUCTION_HOSTS_FILE = path.join(SH_CONFIG_DIR, "production-hosts.json");
 const ALLOWED_JURISDICTIONS_FILE = path.join(
-  CLAWLESS_CONFIG_DIR,
+  SH_CONFIG_DIR,
   "allowed-jurisdictions.json",
 );
 
@@ -244,7 +241,7 @@ try {
       if (isProductionHost(host, prodConfig)) {
         appendEvidence({
           event: "data_boundary_deny",
-          hook: "clawless-data-boundary",
+          hook: "sh-data-boundary",
           tool: toolName,
           host: host,
           reason: "production_host_detected",
@@ -272,7 +269,7 @@ try {
         if (jurisdiction && !jurisdictionConfig.allowed.has(jurisdiction)) {
           appendEvidence({
             event: "data_boundary_deny",
-            hook: "clawless-data-boundary",
+            hook: "sh-data-boundary",
             tool: toolName,
             host: host,
             jurisdiction: jurisdiction,
@@ -294,7 +291,7 @@ try {
   // fail-close: any uncaught error = deny
   process.stdout.write(
     JSON.stringify({
-      reason: `Hook error (clawless-data-boundary): ${err.message}`,
+      reason: `Hook error (sh-data-boundary): ${err.message}`,
     }),
   );
   process.exit(2);

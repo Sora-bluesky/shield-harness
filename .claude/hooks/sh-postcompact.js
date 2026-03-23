@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// clawless-postcompact.js — Post-compaction state restoration & verification
+// sh-postcompact.js — Post-compaction state restoration & verification
 // Spec: DETAILED_DESIGN.md §5.8
 // Event: PostCompact
 // Matcher: auto
@@ -15,11 +15,11 @@ const {
   readSession,
   writeSession,
   appendEvidence,
-  CLAWLESS_DIR,
-} = require("./lib/clawless-utils");
+  SH_DIR,
+} = require("./lib/sh-utils");
 
-const HOOK_NAME = "clawless-postcompact";
-const BACKUP_DIR = path.join(CLAWLESS_DIR, "compact-backup");
+const HOOK_NAME = "sh-postcompact";
+const BACKUP_DIR = path.join(SH_DIR, "compact-backup");
 const CLAUDE_MD = "CLAUDE.md";
 
 // ---------------------------------------------------------------------------
@@ -92,7 +92,7 @@ function verifyCLAUDEMD(session) {
 function buildRestorationContext(session, integrityCheck) {
   const parts = [];
 
-  parts.push("=== Clawless Post-Compaction Restore ===");
+  parts.push("=== Shield Harness Post-Compaction Restore ===");
 
   // Integrity check result
   if (!integrityCheck.valid) {

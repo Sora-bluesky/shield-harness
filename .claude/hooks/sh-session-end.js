@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// clawless-session-end.js — Session cleanup & statistics
+// sh-session-end.js — Session cleanup & statistics
 // Spec: DETAILED_DESIGN.md §5.8
 // Event: SessionEnd
 // Target response time: < 200ms
@@ -13,9 +13,9 @@ const {
   writeSession,
   appendEvidence,
   EVIDENCE_FILE,
-} = require("./lib/clawless-utils");
+} = require("./lib/sh-utils");
 
-const HOOK_NAME = "clawless-session-end";
+const HOOK_NAME = "sh-session-end";
 
 // ---------------------------------------------------------------------------
 // Statistics computation

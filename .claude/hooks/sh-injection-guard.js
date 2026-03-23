@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// clawless-injection-guard.js — 9-category 50+ pattern injection detection (Injection Stage 2)
+// sh-injection-guard.js — 9-category 50+ pattern injection detection (Injection Stage 2)
 // Spec: DETAILED_DESIGN.md §3.3
 // Hook event: PreToolUse
 // Matcher: Bash|Edit|Write|Read|WebFetch
@@ -13,7 +13,7 @@ const {
   nfkcNormalize,
   loadPatterns,
   appendEvidence,
-} = require("./lib/clawless-utils");
+} = require("./lib/sh-utils");
 
 // Zero-width character regex (checked BEFORE pattern matching to prevent bypass)
 // U+200B-200F: zero-width space, non-joiner, joiner, LTR mark, RTL mark
@@ -67,7 +67,7 @@ try {
   if (ZERO_WIDTH_RE.test(rawText)) {
     // Test against raw text (pre-NFKC) since NFKC may normalize some away
     appendEvidence({
-      hook: "clawless-injection-guard",
+      hook: "sh-injection-guard",
       event: "deny",
       tool: toolName,
       category: "zero_width",
@@ -76,7 +76,7 @@ try {
       session_id: sessionId,
     });
     deny(
-      "[clawless-injection-guard] Zero-width character detected. " +
+      "[sh-injection-guard] Zero-width character detected. " +
         "Invisible characters can be used to bypass security patterns. " +
         "Category: zero_width (severity: high)",
     );
@@ -86,9 +86,7 @@ try {
   const patterns = loadPatterns();
 
   if (!patterns || !patterns.categories) {
-    deny(
-      "[clawless-injection-guard] injection-patterns.json has invalid structure.",
-    );
+    deny("[sh-injection-guard] injection-patterns.json has invalid structure.");
   }
 
   // Step 4: Match each category's patterns in severity order
@@ -113,7 +111,7 @@ try {
         if (severity === "critical" || severity === "high") {
           // Deny immediately with evidence
           appendEvidence({
-            hook: "clawless-injection-guard",
+            hook: "sh-injection-guard",
             event: "deny",
             tool: toolName,
             category: categoryName,
@@ -122,7 +120,7 @@ try {
             session_id: sessionId,
           });
           deny(
-            `[clawless-injection-guard] Injection pattern detected. ` +
+            `[sh-injection-guard] Injection pattern detected. ` +
               `Category: ${categoryName} (severity: ${severity}). ` +
               `Description: ${category.description || "N/A"}`,
           );
@@ -149,7 +147,7 @@ try {
       (w) => `[${w.category}] ${w.description}`,
     );
     allow(
-      `[clawless-injection-guard] Warning: potential security concern detected.\n` +
+      `[sh-injection-guard] Warning: potential security concern detected.\n` +
         warningMessages.join("\n"),
     );
   }
@@ -160,7 +158,7 @@ try {
   // fail-close: any uncaught error = deny
   process.stdout.write(
     JSON.stringify({
-      reason: `Hook error (clawless-injection-guard): ${err.message}`,
+      reason: `Hook error (sh-injection-guard): ${err.message}`,
     }),
   );
   process.exit(2);

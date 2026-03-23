@@ -1,22 +1,18 @@
 #!/usr/bin/env node
-// clawless-dep-audit.js — Dependency package install detection + security scan advisory
+// sh-dep-audit.js — Dependency package install detection + security scan advisory
 // Spec: DETAILED_DESIGN.md §4.3
 // Hook event: PostToolUse
 // Matcher: Bash
 // Target response time: < 30ms
 "use strict";
 
-const {
-  readHookInput,
-  allow,
-  appendEvidence,
-} = require("./lib/clawless-utils");
+const { readHookInput, allow, appendEvidence } = require("./lib/sh-utils");
 
 // ---------------------------------------------------------------------------
 // Constants / Patterns
 // ---------------------------------------------------------------------------
 
-const HOOK_NAME = "clawless-dep-audit";
+const HOOK_NAME = "sh-dep-audit";
 
 // Package manager install detection patterns (FR-11-04)
 const INSTALL_PATTERNS = [
