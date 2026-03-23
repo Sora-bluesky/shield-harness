@@ -106,6 +106,11 @@ function init(profile) {
   console.log("");
   console.log(`Shield Harness initialized successfully (profile: ${profile}).`);
   console.log("Run 'claude' to start a secured session.");
+  console.log("");
+  console.log(
+    "[TIP] For enhanced security (Layer 3b), set up NVIDIA OpenShell:",
+  );
+  console.log("      https://github.com/NVIDIA/OpenShell");
 }
 
 // ---------------------------------------------------------------------------
