@@ -124,7 +124,7 @@ Windows ユーザーにとっての主なメリット:
 - 残余リスクを 5% から 1% 未満に低減
 - 自由に取り外し可能 — コンテナを停止すれば Shield Harness は Layer 1-2 にフォールバック
 
-> **ステータス**: Alpha 統合（ADR-037）。検出 + ポリシーテンプレート + バージョン追跡が稼働中。OpenShell は Alpha（v0.0.13）— API は将来変更の可能性あり。
+> **注意**: OpenShell は Alpha（v0.0.13）— API は将来変更の可能性があります。
 
 ## チャンネル連携
 
@@ -142,6 +142,18 @@ Claude Code Channels (Telegram/Discord) との連携をサポート。
 | GitHub CLI   | 2.x (`gh`)   | PR 作成・マージ自動化    | 任意           |
 
 OS: Windows ネイティブファースト（Git Bash 環境）、WSL2/Linux 互換。
+
+## バージョニング
+
+Shield Harness は [Semantic Versioning](https://semver.org/) に準拠します:
+
+| バンプ  | 条件                                             | 例                                          |
+| ------- | ------------------------------------------------ | ------------------------------------------- |
+| `patch` | バグ修正、パターン更新、ドキュメント修正         | injection-patterns.json 更新                |
+| `minor` | 新機能（後方互換）、Phase 内 must タスク全完了時 | OCSF 対応、新フック追加、CLI オプション追加 |
+| `major` | 破壊的変更                                       | スキーマ非互換変更、settings 構造変更       |
+
+**リリーストリガー**: `git tag v1.x.x && git push origin v1.x.x` で `release.yml` が自動実行（npm publish + GitHub Release）。セキュリティ修正は即座に patch リリース。
 
 ## 参考プロジェクト
 
