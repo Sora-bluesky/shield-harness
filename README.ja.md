@@ -2,9 +2,9 @@
 
 # Shield Harness
 
-**Claude Code のセキュリティハーネス — 苦労なし、フック駆動の防御**
+**Claude Code の全操作を自動防御するセキュリティハーネス**
 
-> くろうレス — 苦労レス — 苦労しない
+> 承認ダイアログなしで安全な自律開発を実現
 
 [![English](https://img.shields.io/badge/lang-English-blue?style=flat-square)](README.md)
 [![日本語](https://img.shields.io/badge/lang-日本語-red?style=flat-square)](#)
@@ -13,8 +13,8 @@
 
 ## Shield Harness とは
 
-Claude Code が安全・再現可能に開発を進めるためのハーネス。
-`.claude/` ディレクトリに展開される hooks + rules + permissions + settings の多層防御でエージェントを統制します。
+Claude Code の全操作を自動防御するセキュリティハーネス。
+承認ダイアログなしで安全な自律開発を実現します。`.claude/` ディレクトリに展開される hooks + rules + permissions による多層防御でエージェントを統制します。
 
 ## クイックスタート
 
@@ -78,10 +78,9 @@ npx shield-harness init [--profile minimal|standard|strict]
 
 STG ゲート駆動の自動化パイプライン:
 
-```
-STG0 → STG1 → STG2 → STG3 → STG4 → STG5 → STG6
-要件    設計    実装    検証    CI     コミット  PR/マージ
-```
+| STG0 | STG1 | STG2 | STG3 | STG4 |   STG5   |   STG6    |
+| :--: | :--: | :--: | :--: | :--: | :------: | :-------: |
+| 要件 | 設計 | 実装 | 検証 |  CI  | コミット | PR/マージ |
 
 ## チャンネル連携
 
@@ -95,8 +94,6 @@ Claude Code Channels (Telegram/Discord) との連携をサポート。
 | Git          | 2.x          | バージョン管理           | 必須           |
 | Git Bash     | (Git 同梱)   | フックスクリプト実行環境 | 必須 (Windows) |
 | Node.js      | 18+          | フック実行 + NFKC 正規化 | 必須           |
-| jq           | 1.6+         | フック内 JSON 処理       | 必須           |
-| yq           | v4+ (Go版)   | backlog.yaml 操作        | 必須           |
 | PowerShell 7 | 7.x (`pwsh`) | sync スクリプト          | 推奨           |
 | GitHub CLI   | 2.x (`gh`)   | PR 作成・マージ自動化    | 任意           |
 

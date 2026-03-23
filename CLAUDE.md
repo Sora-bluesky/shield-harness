@@ -1,6 +1,6 @@
 # Shield Harness — Claude Code Security Harness
 
-> Claude Code の .claude/ ディレクトリ構造によるセキュリティハーネス。hooks + rules + permissions + sandbox の多層防御でエージェントを統制する。
+> Claude Code の全操作を自動防御するセキュリティハーネス。承認ダイアログなしで安全な自律開発を実現。
 
 ## Workflow
 
