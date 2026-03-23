@@ -152,15 +152,19 @@ function formatCommitMsg(template, taskId, gate, intent) {
  * @returns {boolean}
  */
 function commandExists(cmd) {
-  try {
-    execSync(`which ${cmd}`, {
-      encoding: "utf8",
-      stdio: ["pipe", "pipe", "pipe"],
-    });
-    return true;
-  } catch {
-    return false;
+  // Try 'which' (Unix/Git Bash) first, then 'where' (Windows cmd)
+  for (const checker of ["which", "where"]) {
+    try {
+      execSync(`${checker} ${cmd}`, {
+        encoding: "utf8",
+        stdio: ["pipe", "pipe", "pipe"],
+      });
+      return true;
+    } catch {
+      // Try next checker
+    }
   }
+  return false;
 }
 
 // Priority weight for sorting (lower = higher priority)
