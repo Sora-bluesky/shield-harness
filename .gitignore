@@ -35,11 +35,7 @@ dist
 *.tsbuildinfo
 
 # Shield Harness ランタイム（証跡・セッション状態）
-.shield-harness/logs/
-.shield-harness/state/
-.shield-harness/backup/
-.shield-harness/compact-backup/
-.shield-harness/session.json
+.shield-harness/
 
 # Legacy runtime directory (migration period)
 .clawless/
