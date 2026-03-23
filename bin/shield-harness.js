@@ -106,11 +106,106 @@ function init(profile) {
   console.log("");
   console.log(`Shield Harness initialized successfully (profile: ${profile}).`);
   console.log("Run 'claude' to start a secured session.");
+
+  // OpenShell setup guide (Layer 3b)
+  printOpenShellGuide();
+}
+
+/**
+ * Detect OpenShell status and print a setup guide.
+ * fail-safe: never throws, prints basic guide on any error.
+ */
+function printOpenShellGuide() {
   console.log("");
-  console.log(
-    "[TIP] For enhanced security (Layer 3b), set up NVIDIA OpenShell:",
-  );
-  console.log("      https://github.com/NVIDIA/OpenShell");
+  console.log("─── OpenShell Setup (Layer 3b: Sandbox Isolation) ───");
+  console.log("");
+
+  let status;
+  try {
+    const {
+      detectOpenShell,
+    } = require("../.claude/hooks/lib/openshell-detect");
+    status = detectOpenShell();
+  } catch {
+    // Detection library not available — show basic guide
+    printBasicGuide();
+    return;
+  }
+
+  if (status.available) {
+    // OpenShell is running
+    console.log("  [OK] OpenShell detected and running");
+    console.log(`       Version: ${status.version || "unknown"}`);
+    if (status.update_available && status.latest_version) {
+      console.log(
+        `       Update available: ${status.version} -> ${status.latest_version}`,
+      );
+      console.log("       Run: openshell update");
+    }
+    console.log("");
+    console.log("  Layer 3b sandbox isolation is active.");
+    return;
+  }
+
+  // Not fully available — guide based on what's missing
+  switch (status.reason) {
+    case "docker_not_found":
+      console.log("  [1/3] Install Docker Desktop:");
+      console.log("        https://www.docker.com/products/docker-desktop/");
+      console.log("");
+      console.log("  [2/3] Install NVIDIA OpenShell:");
+      console.log("        https://github.com/NVIDIA/OpenShell");
+      console.log("        pip install openshell");
+      console.log("");
+      console.log("  [3/3] Start a sandbox:");
+      console.log("        openshell sandbox start");
+      break;
+
+    case "openshell_not_installed":
+      console.log("  [OK] Docker detected");
+      console.log("");
+      console.log("  [1/2] Install NVIDIA OpenShell:");
+      console.log("        https://github.com/NVIDIA/OpenShell");
+      console.log("        pip install openshell");
+      console.log("");
+      console.log("  [2/2] Start a sandbox:");
+      console.log("        openshell sandbox start");
+      break;
+
+    case "container_not_running":
+      console.log("  [OK] Docker detected");
+      console.log(`  [OK] OpenShell installed (v${status.version || "?"})`);
+      if (status.update_available && status.latest_version) {
+        console.log(
+          `       Update available: ${status.version} -> ${status.latest_version}`,
+        );
+      }
+      console.log("");
+      console.log("  [1/1] Start the sandbox:");
+      console.log("        openshell sandbox start");
+      break;
+
+    default:
+      printBasicGuide();
+      return;
+  }
+
+  console.log("");
+  console.log("  OpenShell adds container-level isolation to Shield Harness,");
+  console.log("  limiting blast radius even if a hook bypass is found.");
+}
+
+/**
+ * Fallback: print basic setup guide without detection.
+ */
+function printBasicGuide() {
+  console.log("  For enhanced security, set up NVIDIA OpenShell:");
+  console.log("  https://github.com/NVIDIA/OpenShell");
+  console.log("");
+  console.log("  Setup steps:");
+  console.log("    1. Install Docker Desktop");
+  console.log("    2. pip install openshell");
+  console.log("    3. openshell sandbox start");
 }
 
 // ---------------------------------------------------------------------------
