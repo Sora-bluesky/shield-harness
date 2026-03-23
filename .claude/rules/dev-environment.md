@@ -7,8 +7,8 @@
 
 ## Pre-commit Security
 
-- Git hooks in `.githooks/` (pre-commit, pre-push)
-- `git-guard-scan.sh` blocks secrets, private paths, and sensitive data
+- Git hooks in `.githooks/` (pre-commit)
+- Pre-commit hook blocks internal files (tasks/, scripts/, HANDOFF, INSTRUCTIONS) from being committed
 - Configured via `git config core.hooksPath .githooks`
 
 ## Linting (Future)
@@ -29,9 +29,12 @@
 ## Important Commands
 
 ```powershell
-# Verify shield-harness setup
-pwsh ./scripts/verify-sh-setup.ps1
+# Sync project views (backlog → docs/project/)
+pwsh ./scripts/sync-project-views.ps1
 
-# Git guard (manual scan)
+# Sync bilingual README
+pwsh ./scripts/sync-readme.ps1
+
+# Pre-commit hook (manual run)
 bash .githooks/pre-commit
 ```
