@@ -1,4 +1,0 @@
-{
-  "hosts": ["prod-db.example.com", "production.internal.corp"],
-  "patterns": ["^prod-", "production\\."]
-}

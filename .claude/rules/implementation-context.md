@@ -4,14 +4,14 @@
 
 ## Design Documents（実装時に必ず参照）
 
-| #   | ドキュメント       | 層        | パス                                         | 用途                                     |
-| --- | ------------------ | --------- | -------------------------------------------- | ---------------------------------------- |
-| ①   | REQUIREMENTS.md    | Why       | docs/REQUIREMENTS.md                         | 機能要件・受入基準                       |
-| ②   | THREAT_MODEL.md    | Why→What  | docs/THREAT_MODEL.md                         | 脅威 ID・攻撃ベクトル                    |
-| ③   | ARCHITECTURE.md    | What      | docs/ARCHITECTURE.md                         | 22 フック一覧・ディレクトリ構造          |
-| ④   | CLAUDE_MD_SPEC.md  | What      | docs/CLAUDE_MD_SPEC.md                       | 28 ルール仕様・トレーサビリティ          |
-| ⑤   | DETAILED_DESIGN.md | How       | docs/DETAILED_DESIGN.md                      | 各フックの入出力・正規表現・分岐ロジック |
-| ADR | ADR 設計提案       | Reference | .reference/CLAWLESS_ADR_REDESIGN_PROPOSAL.md | 35 ADR の設計判断根拠                    |
+| #   | ドキュメント       | 層        | パス                                               | 用途                                     |
+| --- | ------------------ | --------- | -------------------------------------------------- | ---------------------------------------- |
+| ①   | REQUIREMENTS.md    | Why       | docs/REQUIREMENTS.md                               | 機能要件・受入基準                       |
+| ②   | THREAT_MODEL.md    | Why→What  | docs/THREAT_MODEL.md                               | 脅威 ID・攻撃ベクトル                    |
+| ③   | ARCHITECTURE.md    | What      | docs/ARCHITECTURE.md                               | 22 フック一覧・ディレクトリ構造          |
+| ④   | CLAUDE_MD_SPEC.md  | What      | docs/CLAUDE_MD_SPEC.md                             | 28 ルール仕様・トレーサビリティ          |
+| ⑤   | DETAILED_DESIGN.md | How       | docs/DETAILED_DESIGN.md                            | 各フックの入出力・正規表現・分岐ロジック |
+| ADR | ADR 設計提案       | Reference | .reference/SHIELD_HARNESS_ADR_REDESIGN_PROPOSAL.md | 35 ADR の設計判断根拠                    |
 
 ## Implementation Order（依存関係グラフに基づく）
 
