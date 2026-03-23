@@ -8,6 +8,7 @@
   "files": [
     ".claude/hooks/",
     ".claude/patterns/",
+    ".claude/policies/",
     ".claude/rules/",
     "bin/"
   ],
