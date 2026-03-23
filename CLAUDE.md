@@ -6,7 +6,7 @@
 
 ```
 ADR-033 → backlog.yaml + sync-project-views (基盤)
-ADR-031 → sh-pipeline.sh (STG ゲート駆動パイプライン)
+ADR-031 → sh-pipeline.js (STG ゲート駆動パイプライン)
 ADR-032 → 承認レスモード
 ADR-034 → 自律タスクループ
 ADR-035 → バイリンガルドキュメント
@@ -16,7 +16,7 @@ ADR-035 → バイリンガルドキュメント
 
 - `DETAILED_DESIGN.md` が各フックの唯一の実装仕様書 — §番号を参照して実装する
 - `tasks/backlog.yaml` は SoT — エージェントの直接編集は deny ルールで禁止
-- Hook スクリプトは pure bash + jq が基本 — 複雑ロジックのみ Node.js CommonJS
+- Hook スクリプトは Node.js CommonJS — lib/sh-utils.js が共通ユーティリティ
 
 ## Rules
 
@@ -27,6 +27,7 @@ ADR-035 → バイリンガルドキュメント
 @.claude/rules/language.md
 @.claude/rules/testing.md
 @.claude/rules/implementation-context.md
+@.claude/rules/channel-security.md
 
 ---
 
