@@ -122,7 +122,7 @@ Key benefits for Windows users:
 - Reduces residual risk from 5% to <1%
 - Freely removable — stop the container and Shield Harness falls back to Layer 1-2
 
-> **Status**: Alpha integration (ADR-037). Detection + policy template + version tracking active. OpenShell is Alpha (v0.0.13) — APIs may change with future releases.
+> **Note**: OpenShell is Alpha (v0.0.13) — APIs may change with future releases.
 
 ## Channel Integration
 
@@ -140,6 +140,18 @@ Channel-sourced messages automatically receive severity boost for enhanced secur
 | GitHub CLI   | 2.x (`gh`)         | PR creation/merge automation        | Optional           |
 
 OS: Windows-native first (Git Bash), WSL2/Linux compatible.
+
+## Versioning
+
+Shield Harness follows [Semantic Versioning](https://semver.org/):
+
+| Bump    | Condition                                                      | Example                              |
+| ------- | -------------------------------------------------------------- | ------------------------------------ |
+| `patch` | Bug fixes, pattern updates, documentation fixes                | injection-patterns.json update       |
+| `minor` | New features (backward compatible), Phase must-tasks completed | OCSF support, new hook, CLI option   |
+| `major` | Breaking changes                                               | Schema incompatible, settings change |
+
+**Release trigger**: `git tag v1.x.x && git push origin v1.x.x` triggers `release.yml` (automated npm publish + GitHub Release). Security fixes trigger an immediate patch release.
 
 ## References
 
