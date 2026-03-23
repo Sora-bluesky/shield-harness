@@ -232,12 +232,17 @@ try {
           }
         }
 
-        // Sync project views
+        // Sync project views + README drift check (ADR-033, ADR-035)
         if (commandExists("pwsh")) {
           try {
             executeTrusted(taskId, "pwsh scripts/sync-project-views.ps1");
           } catch {
             // Non-critical
+          }
+          try {
+            executeTrusted(taskId, "pwsh scripts/sync-readme.ps1");
+          } catch {
+            // Non-critical — drift is reported but does not block
           }
         }
 
