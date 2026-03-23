@@ -93,6 +93,7 @@ try {
   // Empty prompt — nothing to scan
   if (!userPrompt) {
     allow();
+    return;
   }
 
   // Step 1: NFKC normalization
@@ -111,6 +112,7 @@ try {
   if (!result) {
     // No match — allow
     allow();
+    return;
   }
 
   // Step 5: Handle match
@@ -133,6 +135,7 @@ try {
     deny(
       `[${HOOK_NAME}] 入力にセキュリティリスクのあるパターンが検出されました (${result.category}: ${result.severity})`,
     );
+    return;
   }
 
   if (result.action === "warn") {
@@ -156,6 +159,7 @@ try {
       : `[${HOOK_NAME}] 警告: ${result.category} パターン検出 (${result.severity})。注意して処理してください。`;
 
     allow(warning);
+    return;
   }
 
   // Fallback allow

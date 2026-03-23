@@ -81,6 +81,16 @@
         ]
       },
       {
+        "matcher": "Bash|Edit|Write|Read|WebFetch",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node \"$CLAUDE_PROJECT_DIR/.claude/hooks/sh-injection-guard.js\"",
+            "timeout": 10
+          }
+        ]
+      },
+      {
         "matcher": "Bash",
         "hooks": [
           {
@@ -376,7 +386,13 @@
       "Bash(rm -rf /)",
       "Bash(rm -rf ~)",
       "Edit(tasks/backlog.yaml)",
-      "Write(tasks/backlog.yaml)"
+      "Write(tasks/backlog.yaml)",
+      "Edit(.shield-harness/**)",
+      "Write(.shield-harness/**)",
+      "Edit(.claude/patterns/**)",
+      "Write(.claude/patterns/**)",
+      "Edit(.claude/hooks/**)",
+      "Write(.claude/hooks/**)"
     ]
   },
   "env": {

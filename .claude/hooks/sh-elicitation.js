@@ -141,6 +141,7 @@ try {
       deny(
         `[${HOOK_NAME}] フィッシングドメイン検出: ${domain} (${phishing.label})`,
       );
+      return;
     }
   }
 
@@ -170,6 +171,7 @@ try {
         }
 
         deny(`[${HOOK_NAME}] 未許可の MCP サーバー: ${domain}`);
+        return;
       }
     }
   }
@@ -200,6 +202,7 @@ try {
     allow(
       `[${HOOK_NAME}] 警告: 過剰な OAuth スコープが要求されています: ${excessive.join(", ")}。本当に必要か確認してください。`,
     );
+    return;
   }
 
   // Step 5: All clean — allow

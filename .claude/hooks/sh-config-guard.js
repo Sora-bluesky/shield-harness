@@ -66,20 +66,26 @@ function saveConfigSnapshot(snapshot) {
 /**
  * Extract security-critical fields from settings.
  * @param {Object} settings
- * @returns {{ deny_rules: string[], hook_count: number, hook_events: string[], sandbox: boolean, unsandboxed: boolean, disableAllHooks: boolean }}
+ * @returns {{ deny_rules: string[], hook_count: number, hook_events: string[], hook_commands: string[], sandbox: boolean, unsandboxed: boolean, disableAllHooks: boolean }}
  */
 function extractSecurityFields(settings) {
   const denyRules = (settings.permissions && settings.permissions.deny) || [];
 
-  // Count total hooks across all events
+  // Count total hooks and collect command strings across all events
   const hooks = settings.hooks || {};
   let hookCount = 0;
   const hookEvents = [];
+  const hookCommands = [];
   for (const [event, entries] of Object.entries(hooks)) {
     hookEvents.push(event);
     for (const entry of Array.isArray(entries) ? entries : []) {
       const hookList = entry.hooks || [];
       hookCount += hookList.length;
+      for (const h of hookList) {
+        if (h.command) {
+          hookCommands.push(h.command);
+        }
+      }
     }
   }
 
@@ -87,6 +93,7 @@ function extractSecurityFields(settings) {
     deny_rules: denyRules,
     hook_count: hookCount,
     hook_events: hookEvents,
+    hook_commands: hookCommands.sort(),
     sandbox:
       settings.sandbox !== undefined
         ? Boolean(settings.sandbox.enabled !== false)
@@ -123,6 +130,17 @@ function detectDangerousMutations(stored, current) {
     }
   }
 
+  // Check 2b: hook command content swap (B23 — same count, different commands)
+  const storedCmds = stored.hook_commands || [];
+  const currentCmds = current.hook_commands || [];
+  if (storedCmds.length > 0 && currentCmds.length > 0) {
+    for (const cmd of storedCmds) {
+      if (!currentCmds.includes(cmd)) {
+        reasons.push(`hook command removed or swapped: "${cmd}"`);
+      }
+    }
+  }
+
   // Check 3: sandbox disabled
   if (stored.sandbox && !current.sandbox) {
     reasons.push("sandbox.enabled set to false");
@@ -148,22 +166,71 @@ function detectDangerousMutations(stored, current) {
 // Main
 // ---------------------------------------------------------------------------
 
-try {
-  const input = readHookInput();
+if (require.main === module) {
+  try {
+    const input = readHookInput();
 
-  const settings = readSettings();
-  if (!settings) {
-    deny(`[${HOOK_NAME}] settings.json not found or unreadable — fail-close`);
-  }
+    const settings = readSettings();
+    if (!settings) {
+      deny(`[${HOOK_NAME}] settings.json not found or unreadable — fail-close`);
+      return;
+    }
 
-  const currentFields = extractSecurityFields(settings);
-  const settingsContent = fs.readFileSync(SETTINGS_FILE, "utf8");
-  const currentHash = sha256(settingsContent);
+    const currentFields = extractSecurityFields(settings);
+    const settingsContent = fs.readFileSync(SETTINGS_FILE, "utf8");
+    const currentHash = sha256(settingsContent);
 
-  const stored = loadStoredConfig();
+    const stored = loadStoredConfig();
 
-  // First run: record baseline
-  if (!stored) {
+    // First run: record baseline
+    if (!stored) {
+      saveConfigSnapshot({
+        hash: currentHash,
+        ...currentFields,
+      });
+
+      try {
+        appendEvidence({
+          hook: HOOK_NAME,
+          event: "ConfigChange",
+          decision: "allow",
+          action: "baseline_recorded",
+          settings_hash: `sha256:${currentHash}`,
+          session_id: input.sessionId,
+        });
+      } catch {
+        // Non-blocking
+      }
+
+      allow(`[${HOOK_NAME}] Config baseline recorded`);
+      return;
+    }
+
+    // Check for dangerous mutations
+    const mutations = detectDangerousMutations(stored, currentFields);
+
+    if (mutations.blocked) {
+      try {
+        appendEvidence({
+          hook: HOOK_NAME,
+          event: "ConfigChange",
+          decision: "deny",
+          reasons: mutations.reasons,
+          settings_hash: `sha256:${currentHash}`,
+          previous_hash: `sha256:${stored.hash}`,
+          session_id: input.sessionId,
+        });
+      } catch {
+        // Non-blocking
+      }
+
+      deny(
+        `[${HOOK_NAME}] Blocked dangerous config change: ${mutations.reasons.join("; ")}`,
+      );
+      return;
+    }
+
+    // Safe change — update snapshot and allow
     saveConfigSnapshot({
       hash: currentHash,
       ...currentFields,
@@ -174,70 +241,26 @@ try {
         hook: HOOK_NAME,
         event: "ConfigChange",
         decision: "allow",
-        action: "baseline_recorded",
+        action: "config_updated",
         settings_hash: `sha256:${currentHash}`,
+        previous_hash: stored ? `sha256:${stored.hash}` : null,
         session_id: input.sessionId,
       });
     } catch {
       // Non-blocking
     }
 
-    allow(`[${HOOK_NAME}] Config baseline recorded`);
-  }
-
-  // Check for dangerous mutations
-  const mutations = detectDangerousMutations(stored, currentFields);
-
-  if (mutations.blocked) {
-    try {
-      appendEvidence({
-        hook: HOOK_NAME,
-        event: "ConfigChange",
-        decision: "deny",
-        reasons: mutations.reasons,
-        settings_hash: `sha256:${currentHash}`,
-        previous_hash: `sha256:${stored.hash}`,
-        session_id: input.sessionId,
-      });
-    } catch {
-      // Non-blocking
-    }
-
-    deny(
-      `[${HOOK_NAME}] Blocked dangerous config change: ${mutations.reasons.join("; ")}`,
+    allow();
+  } catch (err) {
+    // SECURITY hook — fail-close (§2.3b)
+    process.stdout.write(
+      JSON.stringify({
+        reason: `[${HOOK_NAME}] Hook error (fail-close): ${err.message}`,
+      }),
     );
+    process.exit(2);
   }
-
-  // Safe change — update snapshot and allow
-  saveConfigSnapshot({
-    hash: currentHash,
-    ...currentFields,
-  });
-
-  try {
-    appendEvidence({
-      hook: HOOK_NAME,
-      event: "ConfigChange",
-      decision: "allow",
-      action: "config_updated",
-      settings_hash: `sha256:${currentHash}`,
-      previous_hash: stored ? `sha256:${stored.hash}` : null,
-      session_id: input.sessionId,
-    });
-  } catch {
-    // Non-blocking
-  }
-
-  allow();
-} catch (err) {
-  // SECURITY hook — fail-close (§2.3b)
-  process.stdout.write(
-    JSON.stringify({
-      reason: `[${HOOK_NAME}] Hook error (fail-close): ${err.message}`,
-    }),
-  );
-  process.exit(2);
-}
+} // end require.main === module
 
 // ---------------------------------------------------------------------------
 // Exports (for testing)
