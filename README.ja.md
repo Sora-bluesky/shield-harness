@@ -147,13 +147,15 @@ OS: Windows ネイティブファースト（Git Bash 環境）、WSL2/Linux 互
 
 Shield Harness は 40 以上の Claude Code セキュリティプロジェクトを調査して設計されました。主な参考:
 
-| プロジェクト                                                       | 影響を受けた点                                                                                                       |
-| ------------------------------------------------------------------ | -------------------------------------------------------------------------------------------------------------------- |
-| [claude-guardrails](https://github.com/dwarvesf/claude-guardrails) | npx install パターン、50+ インジェクションパターン、deny ルールカタログ                                              |
-| [claude-warden](https://github.com/johnzfitch/claude-warden)       | 3 段階プロファイル、トークンガバナンス（quiet-inject、output-control）、ConfigChange 自己保護                        |
-| [claude-hooks](https://github.com/lasso-security/claude-hooks)     | 5 カテゴリインジェクション検出、YAML パターン定義                                                                    |
-| [tobari](https://github.com/Sora-bluesky/tobari)                   | 22 フックアーキテクチャ、SHA-256 ハッシュチェーン証跡、STG ゲートパイプライン、PermissionRequest 適応学習            |
-| OpenClaw (ECC)                                                     | 18 件の CVE/セキュリティ問題からの教訓（ゲートウェイ認証、認証情報管理、シムリンクトラバーサル）、チャンネル連携設計 |
+| プロジェクト                                                                 | 影響を受けた点                                                                                                       |
+| ---------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------- |
+| [claude-guardrails](https://github.com/dwarvesf/claude-guardrails)           | npx install パターン、50+ インジェクションパターン、deny ルールカタログ                                              |
+| [claude-warden](https://github.com/johnzfitch/claude-warden)                 | 3 段階プロファイル、トークンガバナンス（quiet-inject、output-control）、ConfigChange 自己保護                        |
+| [claude-hooks](https://github.com/lasso-security/claude-hooks)               | 5 カテゴリインジェクション検出、YAML パターン定義                                                                    |
+| [tobari](https://github.com/Sora-bluesky/tobari)                             | 22 フックアーキテクチャ、SHA-256 ハッシュチェーン証跡、STG ゲートパイプライン、PermissionRequest 適応学習            |
+| [OpenClaw](https://github.com/openclaw/openclaw)                             | 18 件の CVE/セキュリティ問題からの教訓（ゲートウェイ認証、認証情報管理、シムリンクトラバーサル）、チャンネル連携設計 |
+| [everything-claude-code](https://github.com/affaan-m/everything-claude-code) | AgentShield セキュリティ統合（1,282 テスト、102 ルール）、包括的スキル/エージェントカタログ                          |
+| [NVIDIA OpenShell](https://github.com/NVIDIA/OpenShell)                      | Layer 3b カーネルレベルサンドボックス（Landlock、Seccomp BPF、Network NS）、宣言的 YAML ポリシー                     |
 
 ## ライセンス
 
