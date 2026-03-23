@@ -15,6 +15,7 @@ const {
   writeSession,
   appendEvidence,
 } = require("./lib/sh-utils");
+const { detectOpenShell } = require("./lib/openshell-detect");
 
 const HOOK_NAME = "sh-session-start";
 const CLAUDE_MD = "CLAUDE.md";
@@ -135,8 +136,37 @@ try {
   session.session_start = new Date().toISOString();
   session.retry_count = 0;
   session.stop_hook_active = false;
-  writeSession(session);
   contextParts.push("[env-check] Session initialized, token budget set");
+
+  // 2c: OpenShell detection (Layer 3b, ADR-037)
+  const openshellResult = detectOpenShell();
+  session.sandbox_openshell = openshellResult;
+  writeSession(session);
+
+  if (openshellResult.available) {
+    contextParts.push(
+      `[layer-3b] OpenShell v${openshellResult.version} active — kernel-level sandbox enabled`,
+    );
+    if (openshellResult.update_available && openshellResult.latest_version) {
+      contextParts.push(
+        `[layer-3b] OpenShell update available: v${openshellResult.version} → v${openshellResult.latest_version} (run: uv tool upgrade openshell)`,
+      );
+    }
+  } else {
+    const messages = {
+      docker_not_found:
+        "[layer-3b] Docker not found — OpenShell requires Docker",
+      openshell_not_installed:
+        "[layer-3b] OpenShell not installed — Layer 1-2 defense active (95% coverage)",
+      container_not_running:
+        "[layer-3b] OpenShell installed but container not running — run: openshell sandbox create --policy .claude/policies/openshell-default.yaml -- claude",
+      detection_error:
+        "[layer-3b] OpenShell detection error — Layer 1-2 defense active",
+    };
+    contextParts.push(
+      messages[openshellResult.reason] || "[layer-3b] OpenShell unavailable",
+    );
+  }
 
   // --- Module 3: Version Check (§5.1.4) ---
   // Store baseline hashes for instructions monitoring
@@ -170,6 +200,12 @@ try {
       decision: "allow",
       claude_md_hash: claudeMdHash ? `sha256:${claudeMdHash}` : null,
       platform,
+      openshell: openshellResult.available
+        ? {
+            version: openshellResult.version,
+            container_running: openshellResult.container_running,
+          }
+        : { available: false, reason: openshellResult.reason },
       session_id: input.sessionId,
     });
   } catch {

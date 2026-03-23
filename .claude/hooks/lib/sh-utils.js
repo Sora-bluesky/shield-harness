@@ -6,6 +6,7 @@
 const fs = require("fs");
 const path = require("path");
 const crypto = require("crypto");
+const { execSync } = require("child_process");
 
 // --- Constants ---
 
@@ -193,6 +194,33 @@ function readYaml(filePath) {
   return yaml.load(fs.readFileSync(filePath, "utf8"));
 }
 
+// --- Command Detection ---
+
+/**
+ * Check if a command exists on the system.
+ * Tries 'which' (Unix/Git Bash) first, then 'where' (Windows cmd).
+ * @param {string} cmd
+ * @returns {boolean}
+ */
+function commandExists(cmd) {
+  // Reject non-alphanumeric command names to prevent injection
+  if (!/^[a-zA-Z0-9_\-]+$/.test(cmd)) {
+    return false;
+  }
+  for (const checker of ["which", "where"]) {
+    try {
+      execSync(`${checker} ${cmd}`, {
+        encoding: "utf8",
+        stdio: ["pipe", "pipe", "pipe"],
+      });
+      return true;
+    } catch {
+      // Try next checker
+    }
+  }
+  return false;
+}
+
 // --- Patterns ---
 
 /**
@@ -236,6 +264,8 @@ module.exports = {
   appendEvidence,
   // YAML
   readYaml,
+  // Command Detection
+  commandExists,
   // Patterns
   loadPatterns,
 };
