@@ -2,7 +2,7 @@
 
 # Shield Harness
 
-**Security harness for Claude Code — zero-hassle, hooks-driven defense**
+**Auto-defense security harness for Claude Code — approval-free, safe autonomous development**
 
 [![English](https://img.shields.io/badge/lang-English-blue?style=flat-square)](#)
 [![日本語](https://img.shields.io/badge/lang-日本語-red?style=flat-square)](README.ja.md)
@@ -76,10 +76,9 @@ npx shield-harness init [--profile minimal|standard|strict]
 
 STG gate-driven automation pipeline:
 
-```
-STG0 → STG1 → STG2 → STG3 → STG4 → STG5 → STG6
-Reqs    Design  Impl    Verify  CI     Commit   PR/Merge
-```
+| STG0 |  STG1  | STG2 |  STG3  | STG4 |  STG5  |   STG6   |
+| :--: | :----: | :--: | :----: | :--: | :----: | :------: |
+| Reqs | Design | Impl | Verify |  CI  | Commit | PR/Merge |
 
 ## Channel Integration
 
@@ -93,8 +92,6 @@ Channel-sourced messages automatically receive severity boost for enhanced secur
 | Git          | 2.x                | Version control                     | Required           |
 | Git Bash     | (bundled with Git) | Hook script runtime                 | Required (Windows) |
 | Node.js      | 18+                | Hook execution + NFKC normalization | Required           |
-| jq           | 1.6+               | JSON processing in hooks            | Required           |
-| yq           | v4+ (Go)           | backlog.yaml operations             | Required           |
 | PowerShell 7 | 7.x (`pwsh`)       | Sync scripts                        | Recommended        |
 | GitHub CLI   | 2.x (`gh`)         | PR creation/merge automation        | Optional           |
 
