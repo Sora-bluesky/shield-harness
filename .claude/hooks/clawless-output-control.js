@@ -89,26 +89,30 @@ function estimateTokens(charCount) {
 function trackTokenBudget(outputSize) {
   try {
     const session = readSession();
-    const budget = session.token_budget || 0;
-    if (budget <= 0) return null; // No budget configured
+    const tokenBudget = session.token_budget;
+    if (!tokenBudget || !tokenBudget.session_limit) return null; // No budget configured
 
-    const currentUsage = session.token_usage || 0;
+    const budgetLimit = tokenBudget.session_limit;
+    const currentUsage = tokenBudget.used || 0;
     const newTokens = estimateTokens(outputSize);
     const updatedUsage = currentUsage + newTokens;
 
-    // Update session
+    // Update session — write to token_budget.used (single source of truth)
     writeSession({
       ...session,
-      token_usage: updatedUsage,
+      token_budget: {
+        ...tokenBudget,
+        used: updatedUsage,
+      },
     });
 
-    const ratio = updatedUsage / budget;
+    const ratio = updatedUsage / budgetLimit;
 
     if (ratio >= BUDGET_LIMIT_RATIO) {
-      return `[${HOOK_NAME}] トークン予算を超過しました（${updatedUsage}/${budget} tokens）。ユーザー確認が必要です。`;
+      return `[${HOOK_NAME}] トークン予算を超過しました（${updatedUsage}/${budgetLimit} tokens）。ユーザー確認が必要です。`;
     }
     if (ratio >= BUDGET_WARNING_RATIO) {
-      return `[${HOOK_NAME}] トークン予算の 80% に到達しました（${updatedUsage}/${budget} tokens）。`;
+      return `[${HOOK_NAME}] トークン予算の 80% に到達しました（${updatedUsage}/${budgetLimit} tokens）。`;
     }
 
     return null;
