@@ -162,6 +162,40 @@ function commandExists(cmd) {
   }
 }
 
+/**
+ * Bump version in package.json and return the new version string.
+ * @param {string} bumpType - "patch" | "minor" | "major"
+ * @returns {string|null} New version string, or null if package.json not found.
+ */
+function bumpVersion(bumpType) {
+  const pkgPath = "package.json";
+  if (!fs.existsSync(pkgPath)) return null;
+
+  const pkg = JSON.parse(fs.readFileSync(pkgPath, "utf8"));
+  const parts = (pkg.version || "0.0.0").split(".").map(Number);
+
+  switch (bumpType) {
+    case "major":
+      parts[0] += 1;
+      parts[1] = 0;
+      parts[2] = 0;
+      break;
+    case "minor":
+      parts[1] += 1;
+      parts[2] = 0;
+      break;
+    case "patch":
+    default:
+      parts[2] += 1;
+      break;
+  }
+
+  const newVersion = parts.join(".");
+  pkg.version = newVersion;
+  fs.writeFileSync(pkgPath, JSON.stringify(pkg, null, 2) + "\n", "utf8");
+  return newVersion;
+}
+
 // ---------------------------------------------------------------------------
 // Main
 // ---------------------------------------------------------------------------
@@ -179,6 +213,8 @@ try {
   const autoPush = config.auto_push === true;
   const autoPR = config.auto_pr === true;
   const autoMerge = config.auto_merge === true;
+  const autoTag = config.auto_tag === true;
+  const versionBump = config.version_bump || "patch";
   const commitFmt =
     config.commit_message_format || "[{task_id}] STG{gate}: {intent}";
 
@@ -426,7 +462,24 @@ try {
           // No changes
         }
 
-        summary = `STG6 passed: PR #${prNumberStr} merged [${taskId}]`;
+        // Auto-tag release version (TASK-013)
+        if (autoTag) {
+          try {
+            const newVersion = bumpVersion(versionBump);
+            if (newVersion) {
+              const tag = `v${newVersion}`;
+              executeTrusted(taskId, `git tag "${tag}"`);
+              executeTrusted(taskId, `git push origin "${tag}"`);
+              summary = `STG6 passed: PR #${prNumberStr} merged, tagged ${tag} [${taskId}]`;
+            } else {
+              summary = `STG6 passed: PR #${prNumberStr} merged [${taskId}] (tag skipped: no package.json)`;
+            }
+          } catch (tagErr) {
+            summary = `STG6 passed: PR #${prNumberStr} merged [${taskId}] (tag failed: ${tagErr.message})`;
+          }
+        } else {
+          summary = `STG6 passed: PR #${prNumberStr} merged [${taskId}]`;
+        }
       } catch (err) {
         summary = `STG6 error: ${err.message}`;
       }

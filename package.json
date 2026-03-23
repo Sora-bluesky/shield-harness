@@ -1,0 +1,33 @@
+{
+  "name": "clawless",
+  "version": "0.1.0",
+  "description": "Security harness for Claude Code — hooks-driven, zero-hassle defense",
+  "bin": {
+    "clawless": "./bin/clawless.js"
+  },
+  "files": [
+    ".claude/hooks/",
+    ".claude/patterns/",
+    ".claude/rules/",
+    "bin/"
+  ],
+  "scripts": {
+    "test": "echo \"No tests yet\" && exit 0"
+  },
+  "keywords": [
+    "claude-code",
+    "security",
+    "hooks",
+    "harness",
+    "ai-safety"
+  ],
+  "author": "Sora",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Sora-bluesky/clawless.git"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}
