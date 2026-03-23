@@ -54,3 +54,37 @@ Clawless hooks detect this tag automatically on any hook event:
 - **Unauthorized sender**: 公式 allowlist（第一防衛線）+ Clawless 二重検証
 - **Privilege escalation**: channel messages cannot modify deny rules or hook configuration
 - **Task creation via channel**: requires STG0 gate validation before acceptance
+
+### Implementation Mapping
+
+Hook implementations that handle channel-related security:
+
+| Threat                | Hook                      | Function                                                                | Spec       |
+| --------------------- | ------------------------- | ----------------------------------------------------------------------- | ---------- |
+| Injection via channel | clawless-user-prompt.js   | `scanPatterns()` with `isChannel` flag                                  | §5.4, §8.6 |
+| Severity boost        | clawless-user-prompt.js   | `boostSeverity()` — elevates severity by one level for channel messages | §8.6.2     |
+| Channel detection     | clawless-user-prompt.js   | `session.source === "channel"` check via `readSession()`                | §8.6.1     |
+| Evidence metadata     | clawless-evidence.js      | `is_channel` field in evidence-ledger.jsonl entries                     | §8.6.3     |
+| Data boundary         | clawless-data-boundary.js | Jurisdiction tracking applies to channel-originated commands            | §3.4       |
+| Config protection     | clawless-config-guard.js  | deny rules and hook config immutable regardless of source               | §5.3       |
+| Task gate             | clawless-pipeline.js      | STG0 validation required for channel-originated task creation           | §8.1       |
+
+### Severity Boost Table
+
+Channel messages automatically boost pattern severity by one level:
+
+| Original | Boosted  | Action     |
+| -------- | -------- | ---------- |
+| low      | medium   | warn       |
+| medium   | high     | deny       |
+| high     | critical | deny       |
+| critical | critical | deny (cap) |
+
+### Phase 2 Migration
+
+When `--channels` becomes available in VS Code panel mode:
+
+1. `clawless-session-start.js` version-check detects the new capability
+2. additionalContext suggests migration via `npx clawless channels migrate`
+3. No hook code changes required — tag-based detection is environment-agnostic
+4. New channel providers (beyond Telegram/Discord) are automatically covered

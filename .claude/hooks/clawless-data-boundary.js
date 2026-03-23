@@ -12,6 +12,7 @@ const {
   readHookInput,
   allow,
   deny,
+  readSession,
   appendEvidence,
 } = require("./lib/clawless-utils");
 
@@ -215,6 +216,15 @@ try {
   const toolName = input.toolName;
   const toolInput = input.toolInput;
 
+  // Check channel source for evidence metadata (§8.6.3)
+  let isChannel = false;
+  try {
+    const session = readSession();
+    isChannel = session.source === "channel";
+  } catch {
+    // Session read failure is non-blocking
+  }
+
   // --- Step 1: Production DB host detection ---
   const prodConfig = loadProductionHosts();
 
@@ -238,6 +248,7 @@ try {
           tool: toolName,
           host: host,
           reason: "production_host_detected",
+          is_channel: isChannel,
         });
         deny(`Production environment access is prohibited: ${host}`);
       }
@@ -266,6 +277,7 @@ try {
             host: host,
             jurisdiction: jurisdiction,
             reason: "unauthorized_jurisdiction",
+            is_channel: isChannel,
           });
           deny(
             `Unauthorized jurisdiction detected: ${jurisdiction} (host: ${host}). ` +
