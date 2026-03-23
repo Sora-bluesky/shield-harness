@@ -31,11 +31,12 @@ npx shield-harness init [--profile minimal|standard|strict]
 
 3-layer defense model:
 
-| Layer   | Defense            | Implementation                   |
-| ------- | ------------------ | -------------------------------- |
-| Layer 1 | Permission control | `settings.json` deny/allow rules |
-| Layer 2 | Hook defense       | 22 Node.js hook scripts          |
-| Layer 3 | Sandbox            | OS-level process isolation       |
+| Layer    | Defense            | Implementation                                     |
+| -------- | ------------------ | -------------------------------------------------- |
+| Layer 1  | Permission control | `settings.json` deny/allow rules                   |
+| Layer 2  | Hook defense       | 22 Node.js hook scripts                            |
+| Layer 3  | Sandbox            | Claude Code native sandbox (bubblewrap / Seatbelt) |
+| Layer 3b | Container sandbox  | NVIDIA OpenShell (optional, Docker environments)   |
 
 ## Profiles
 
@@ -80,6 +81,49 @@ STG gate-driven automation pipeline:
 | :--: | :----: | :--: | :----: | :--: | :----: | :------: |
 | Reqs | Design | Impl | Verify |  CI  | Commit | PR/Merge |
 
+## Layer 3: Sandbox (OS-Level Isolation)
+
+Layer 3 relies on Claude Code's built-in sandbox. Shield Harness does not implement its own sandbox — it leverages Layers 1 & 2 to compensate when sandboxing is unavailable.
+
+### Platform Support
+
+| OS             | Sandbox       | Technology         | Status                                  |
+| -------------- | ------------- | ------------------ | --------------------------------------- |
+| macOS          | Supported     | Seatbelt           | Auto-enabled                            |
+| Linux          | Supported     | bubblewrap + socat | `sudo apt-get install bubblewrap socat` |
+| WSL2           | Supported     | bubblewrap + socat | Same as Linux                           |
+| WSL1           | Not supported | —                  | Kernel features missing                 |
+| Windows native | Not supported | —                  | Planned by Anthropic                    |
+
+### Windows Native: Security Gap & Mitigation
+
+On Windows native, Claude Code's sandbox features (`sandbox.filesystem.*`, `sandbox.network.*`, `sandbox.autoAllow`) do not function. Shield Harness compensates through:
+
+- **Layer 1**: `permissions.deny` includes Windows-specific commands (`type`, `del`, `format`, `Invoke-WebRequest`)
+- **Layer 2**: All 22 hooks operate normally — injection detection, evidence recording, and gate checks are fully functional
+- **Limitation**: Child process file access cannot be restricted at the OS level; raw socket communication bypasses command pattern matching
+
+For enterprise environments, supplementing with Windows Firewall outbound rules for process-level network control is recommended.
+
+### Layer 3b: NVIDIA OpenShell (Optional)
+
+[NVIDIA OpenShell](https://github.com/NVIDIA/OpenShell) (Apache 2.0) provides **kernel-level isolation** for AI agents via Docker:
+
+| Mechanism    | Target     | Protection                |
+| ------------ | ---------- | ------------------------- |
+| Landlock LSM | Filesystem | denyWrite / denyRead      |
+| Seccomp BPF  | Syscalls   | Socket / process restrict |
+| Network NS   | Network    | Domain-level deny         |
+
+Key benefits for Windows users:
+
+- Policies exist **outside** the agent process — the agent cannot disable its own guardrails
+- Runs on Docker Desktop + WSL2 backend (typical Windows dev setup)
+- Reduces residual risk from 5% to <1%
+- Freely removable — stop the container and Shield Harness falls back to Layer 1-2
+
+> **Status**: Alpha integration (ADR-037). Documentation only — no runtime dependency yet.
+
 ## Channel Integration
 
 Supports Claude Code Channels (Telegram/Discord).
@@ -96,6 +140,18 @@ Channel-sourced messages automatically receive severity boost for enhanced secur
 | GitHub CLI   | 2.x (`gh`)         | PR creation/merge automation        | Optional           |
 
 OS: Windows-native first (Git Bash), WSL2/Linux compatible.
+
+## References
+
+Shield Harness was designed by surveying 40+ Claude Code security projects. Key references:
+
+| Project                                                            | Influence                                                                                                          |
+| ------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------ |
+| [claude-guardrails](https://github.com/dwarvesf/claude-guardrails) | npx install pattern, 50+ injection patterns, deny rule catalog                                                     |
+| [claude-warden](https://github.com/johnzfitch/claude-warden)       | 3-tier profiles, token governance (quiet-inject, output-control), ConfigChange self-protection                     |
+| [claude-hooks](https://github.com/lasso-security/claude-hooks)     | 5-category injection detection, YAML pattern definitions                                                           |
+| [tobari](https://github.com/Sora-bluesky/tobari)                   | 22-hook architecture, SHA-256 hash chain evidence, STG gate pipeline, PermissionRequest adaptive learning          |
+| OpenClaw (ECC)                                                     | 18 CVE/security issue lessons (gateway auth, credential management, symlink traversal), channel integration design |
 
 ## License
 
