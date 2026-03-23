@@ -145,13 +145,15 @@ OS: Windows-native first (Git Bash), WSL2/Linux compatible.
 
 Shield Harness was designed by surveying 40+ Claude Code security projects. Key references:
 
-| Project                                                            | Influence                                                                                                          |
-| ------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------ |
-| [claude-guardrails](https://github.com/dwarvesf/claude-guardrails) | npx install pattern, 50+ injection patterns, deny rule catalog                                                     |
-| [claude-warden](https://github.com/johnzfitch/claude-warden)       | 3-tier profiles, token governance (quiet-inject, output-control), ConfigChange self-protection                     |
-| [claude-hooks](https://github.com/lasso-security/claude-hooks)     | 5-category injection detection, YAML pattern definitions                                                           |
-| [tobari](https://github.com/Sora-bluesky/tobari)                   | 22-hook architecture, SHA-256 hash chain evidence, STG gate pipeline, PermissionRequest adaptive learning          |
-| OpenClaw (ECC)                                                     | 18 CVE/security issue lessons (gateway auth, credential management, symlink traversal), channel integration design |
+| Project                                                                      | Influence                                                                                                          |
+| ---------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------ |
+| [claude-guardrails](https://github.com/dwarvesf/claude-guardrails)           | npx install pattern, 50+ injection patterns, deny rule catalog                                                     |
+| [claude-warden](https://github.com/johnzfitch/claude-warden)                 | 3-tier profiles, token governance (quiet-inject, output-control), ConfigChange self-protection                     |
+| [claude-hooks](https://github.com/lasso-security/claude-hooks)               | 5-category injection detection, YAML pattern definitions                                                           |
+| [tobari](https://github.com/Sora-bluesky/tobari)                             | 22-hook architecture, SHA-256 hash chain evidence, STG gate pipeline, PermissionRequest adaptive learning          |
+| [OpenClaw](https://github.com/openclaw/openclaw)                             | 18 CVE/security issue lessons (gateway auth, credential management, symlink traversal), channel integration design |
+| [everything-claude-code](https://github.com/affaan-m/everything-claude-code) | AgentShield security integration (1,282 tests, 102 rules), comprehensive skill/agent catalog                       |
+| [NVIDIA OpenShell](https://github.com/NVIDIA/OpenShell)                      | Layer 3b kernel-level sandbox (Landlock, Seccomp BPF, Network NS), declarative YAML policies                       |
 
 ## License
 
