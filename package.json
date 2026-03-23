@@ -13,7 +13,14 @@
     "bin/"
   ],
   "scripts": {
-    "test": "echo \"No tests yet\" && exit 0"
+    "test": "node --test tests/*.test.js",
+    "test:evidence": "node --test tests/evidence-integrity.test.js",
+    "test:gate": "node --test tests/gate-evasion.test.js",
+    "test:injection": "node --test tests/injection-evasion.test.js",
+    "test:config": "node --test tests/config-guard-evasion.test.js",
+    "test:boundary": "node --test tests/data-boundary-evasion.test.js",
+    "test:output": "node --test tests/output-security.test.js",
+    "test:ocsf": "node --test tests/ocsf-mapper.test.js"
   },
   "keywords": [
     "claude-code",

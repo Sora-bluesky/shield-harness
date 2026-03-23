@@ -80,11 +80,13 @@ try {
   // No package.json — no tests to run
   if (!config.hasPackageJson) {
     allow();
+    return;
   }
 
   // No test script defined — skip testing
   if (!config.hasTestScript) {
     allow();
+    return;
   }
 
   // Step 2: Run tests
@@ -104,6 +106,7 @@ try {
     }
 
     allow(`[${HOOK_NAME}] テスト通過。タスク完了を許可します。`);
+    return;
   }
 
   // Tests failed — block task completion

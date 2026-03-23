@@ -239,6 +239,7 @@ try {
   const config = loadPipelineConfig();
   if (!config || config.auto_commit !== true) {
     allow();
+    return;
   }
 
   const autoCommit = config.auto_commit === true;
@@ -255,17 +256,20 @@ try {
   const taskId = session.active_task_id;
   if (!taskId) {
     allow();
+    return;
   }
 
   // Step 2: Get stage status
   const taskData = getTaskData(taskId);
   if (!taskData) {
     allow();
+    return;
   }
 
   const stageStatus = taskData.stage_status;
   if (!stageStatus) {
     allow();
+    return;
   }
 
   // Step 3: STG gate progression
@@ -597,6 +601,7 @@ try {
     }
 
     allow(`[${HOOK_NAME}] ${summary}`);
+    return;
   }
 
   allow();

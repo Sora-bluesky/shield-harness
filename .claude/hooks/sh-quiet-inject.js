@@ -122,6 +122,7 @@ try {
   // Empty command — nothing to inject
   if (!command) {
     allow();
+    return;
   }
 
   const result = injectQuietFlag(command);

@@ -120,6 +120,7 @@ try {
 
   if (!permissionPattern) {
     allow();
+    return;
   }
 
   // Check 1: deny rule conflict
@@ -143,6 +144,7 @@ try {
     deny(
       `[${HOOK_NAME}] deny ルールは学習で上書きできません。衝突ルール: ${conflict}`,
     );
+    return;
   }
 
   // Check 2: blacklist
@@ -161,6 +163,7 @@ try {
     }
 
     deny(`[${HOOK_NAME}] パターンが広すぎます: ${permissionPattern}`);
+    return;
   }
 
   // Check 3: learning limit
@@ -183,6 +186,7 @@ try {
     deny(
       `[${HOOK_NAME}] 学習上限に到達しました (${currentCount}/${MAX_LEARNED_RULES})`,
     );
+    return;
   }
 
   // All checks passed — allow

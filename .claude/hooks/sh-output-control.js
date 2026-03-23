@@ -34,6 +34,22 @@ const BUDGET_LIMIT_RATIO = 1.0;
 // Rough token estimation: ~4 chars per token
 const CHARS_PER_TOKEN = 4;
 
+// Dangerous system tags that could be used for prompt injection via tool output
+const DANGEROUS_TAG_NAMES = [
+  "system-reminder",
+  "system-instruction",
+  "system-message",
+  "system-prompt",
+];
+
+// Build a single regex that matches all dangerous tags (non-greedy, multiline)
+const DANGEROUS_TAGS_RE = new RegExp(
+  DANGEROUS_TAG_NAMES.map((tag) => `<${tag}[^>]*>[\\s\\S]*?</${tag}>`).join(
+    "|",
+  ),
+  "gi",
+);
+
 // ---------------------------------------------------------------------------
 // Helper Functions
 // ---------------------------------------------------------------------------
@@ -45,6 +61,18 @@ const CHARS_PER_TOKEN = 4;
  */
 function getLimits(toolName) {
   return TRUNCATION_LIMITS[toolName] || TRUNCATION_LIMITS._default;
+}
+
+/**
+ * Strip dangerous system tags from tool output to prevent prompt injection.
+ * Replaces matched tags with [REDACTED]. Handles multiline content.
+ * Malformed/unclosed tags are left as-is (graceful degradation).
+ * @param {string} text
+ * @returns {string}
+ */
+function stripDangerousTags(text) {
+  if (!text || typeof text !== "string") return text;
+  return text.replace(DANGEROUS_TAGS_RE, "[REDACTED]");
 }
 
 /**
@@ -123,51 +151,56 @@ function trackTokenBudget(outputSize) {
 }
 
 // ---------------------------------------------------------------------------
-// Main
+// Main — only execute when run directly (not when require'd for testing)
 // ---------------------------------------------------------------------------
 
-try {
-  const input = readHookInput();
-  const { toolName, toolResult } = input;
+if (require.main === module) {
+  try {
+    const input = readHookInput();
+    const { toolName, toolResult } = input;
 
-  const resultStr =
-    typeof toolResult === "string" ? toolResult : JSON.stringify(toolResult);
+    const resultStr =
+      typeof toolResult === "string" ? toolResult : JSON.stringify(toolResult);
 
-  // Truncate if necessary
-  const { text, truncated } = truncateOutput(resultStr, toolName);
+    // Strip dangerous system tags before any further processing
+    const sanitized = stripDangerousTags(resultStr);
 
-  // Track token budget
-  const budgetWarning = trackTokenBudget(resultStr ? resultStr.length : 0);
+    // Truncate if necessary
+    const { text, truncated } = truncateOutput(sanitized, toolName);
 
-  // Build context messages
-  const context = [];
-  if (truncated) {
-    context.push(
-      `[${HOOK_NAME}] ${toolName} の出力を切り詰めました（制限超過）。`,
-    );
-  }
-  if (budgetWarning) {
-    context.push(budgetWarning);
-  }
+    // Track token budget (based on sanitized output)
+    const budgetWarning = trackTokenBudget(sanitized ? sanitized.length : 0);
 
-  // Output result
-  if (truncated) {
-    // Must use allowWithResult to replace the tool output
-    if (context.length > 0) {
-      // allowWithResult doesn't support additionalContext, so prepend warnings to the result
-      const contextHeader = context.join("\n") + "\n\n";
-      allowWithResult(contextHeader + text);
-    } else {
-      allowWithResult(text);
+    // Build context messages
+    const context = [];
+    if (truncated) {
+      context.push(
+        `[${HOOK_NAME}] ${toolName} の出力を切り詰めました（制限超過）。`,
+      );
     }
-  } else if (context.length > 0) {
-    allow(context.join("\n"));
-  } else {
+    if (budgetWarning) {
+      context.push(budgetWarning);
+    }
+
+    // Output result
+    if (truncated) {
+      // Must use allowWithResult to replace the tool output
+      if (context.length > 0) {
+        // allowWithResult doesn't support additionalContext, so prepend warnings to the result
+        const contextHeader = context.join("\n") + "\n\n";
+        allowWithResult(contextHeader + text);
+      } else {
+        allowWithResult(text);
+      }
+    } else if (context.length > 0) {
+      allow(context.join("\n"));
+    } else {
+      allow();
+    }
+  } catch (_err) {
+    // Operational hook — on error, pass through the original output.
     allow();
   }
-} catch (_err) {
-  // Operational hook — on error, pass through the original output.
-  allow();
 }
 
 // ---------------------------------------------------------------------------
@@ -176,6 +209,7 @@ try {
 
 module.exports = {
   TRUNCATION_LIMITS,
+  stripDangerousTags,
   truncateOutput,
   estimateTokens,
   getLimits,
