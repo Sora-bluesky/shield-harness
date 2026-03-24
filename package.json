@@ -10,6 +10,7 @@
     ".claude/patterns/",
     ".claude/policies/",
     ".claude/rules/",
+    ".claude/permissions-spec.json",
     "bin/"
   ],
   "scripts": {
@@ -21,7 +22,8 @@
     "test:boundary": "node --test tests/data-boundary-evasion.test.js",
     "test:output": "node --test tests/output-security.test.js",
     "test:ocsf": "node --test tests/ocsf-mapper.test.js",
-    "test:policy-compat": "node --test tests/policy-compat.test.js"
+    "test:policy-compat": "node --test tests/policy-compat.test.js",
+    "test:permissions": "node --test tests/permissions-alignment.test.js"
   },
   "keywords": [
     "claude-code",

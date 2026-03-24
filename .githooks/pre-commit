@@ -44,4 +44,39 @@ if [ ${#blocked_files[@]} -gt 0 ]; then
   exit 1
 fi
 
+# --- Permissions alignment check ---
+# Validates that permissions-spec.json (SoT) and settings.json are in sync
+# Only runs when either file is staged (performance optimization)
+if command -v node >/dev/null 2>&1; then
+  SPEC=".claude/permissions-spec.json"
+  SETTINGS=".claude/settings.json"
+  if [ -f "$SPEC" ] && [ -f "$SETTINGS" ]; then
+    spec_or_settings_staged=false
+    for file in $staged_files; do
+      case "$file" in
+        *permissions-spec.json|*settings.json)
+          spec_or_settings_staged=true
+          break
+          ;;
+      esac
+    done
+    if [ "$spec_or_settings_staged" = true ]; then
+      if ! node -e "
+        const v = require('./.claude/hooks/lib/permissions-validator.js');
+        const r = v.validateAlignment('$SPEC', '$SETTINGS');
+        if (!r.aligned) { console.error(v.formatReport(r)); process.exit(1); }
+      " 2>&1; then
+        echo ""
+        echo "=== COMMIT BLOCKED ==="
+        echo "permissions-spec.json and settings.json are out of sync."
+        echo "Fix the divergence before committing."
+        echo "Run: npm run test:permissions for details."
+        echo "===================="
+        echo ""
+        exit 1
+      fi
+    fi
+  fi
+fi
+
 exit 0

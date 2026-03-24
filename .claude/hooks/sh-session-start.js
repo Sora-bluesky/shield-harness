@@ -123,6 +123,29 @@ try {
     );
   }
 
+  // 1e: Permissions alignment check (permanent countermeasure)
+  const PERM_SPEC_FILE = path.join(".claude", "permissions-spec.json");
+  if (fs.existsSync(PERM_SPEC_FILE)) {
+    try {
+      const { validateAlignment } = require("./lib/permissions-validator");
+      const result = validateAlignment(PERM_SPEC_FILE, SETTINGS_FILE);
+      if (result.aligned) {
+        contextParts.push(
+          `[gate-check] Permissions alignment: OK (${result.counts})`,
+        );
+      } else {
+        contextParts.push(
+          "[gate-check] WARNING: Permissions divergence detected",
+        );
+        contextParts.push(`[gate-check] ${result.summary}`);
+      }
+    } catch (err) {
+      contextParts.push(
+        `[gate-check] WARNING: Permissions check failed: ${err.message}`,
+      );
+    }
+  }
+
   // --- Module 2: Env Check (§5.1.2) ---
 
   // 2a: OS detection
