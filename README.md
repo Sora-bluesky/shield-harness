@@ -4,6 +4,8 @@
 
 **Auto-defense security harness for Claude Code — approval-free, safe autonomous development**
 
+> **Alpha (v0.1.0)**: Security model is under active development. Permission rules and design documents are being aligned. Not recommended for production use yet.
+
 [![English](https://img.shields.io/badge/lang-English-blue?style=flat-square)](#)
 [![日本語](https://img.shields.io/badge/lang-日本語-red?style=flat-square)](README.ja.md)
 
