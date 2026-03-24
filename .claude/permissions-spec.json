@@ -91,6 +91,16 @@
         "threat_id": "T-03"
       },
       {
+        "rule": "Edit(.claude/policies/**)",
+        "rationale": "OpenShell policy file protection (ADR-037 GA)",
+        "threat_id": "T-03"
+      },
+      {
+        "rule": "Write(.claude/policies/**)",
+        "rationale": "OpenShell policy file protection (ADR-037 GA)",
+        "threat_id": "T-03"
+      },
+      {
         "rule": "Bash(rm -rf /)",
         "rationale": "System destruction prevention",
         "threat_id": "T-04"
@@ -433,7 +443,7 @@
     ]
   },
   "expected_counts": {
-    "deny": 41,
+    "deny": 43,
     "ask": 4,
     "allow": 49
   }

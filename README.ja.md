@@ -52,30 +52,30 @@ npx shield-harness init [--profile minimal|standard|strict]
 
 ## フックカタログ
 
-| #   | フック           | イベント              | 責務                                          |
-| --- | ---------------- | --------------------- | --------------------------------------------- |
-| 1   | permission       | PreToolUse            | ツール使用の 4 カテゴリ分類                   |
-| 2   | gate             | PreToolUse            | Bash コマンドの 7 攻撃ベクトル検査            |
-| 3   | injection-guard  | PreToolUse            | 9 カテゴリ 50+ パターンのインジェクション検出 |
-| 4   | data-boundary    | PreToolUse            | 本番データ境界 + 管轄追跡                     |
-| 5   | quiet-inject     | PreToolUse            | quiet フラグ自動注入                          |
-| 6   | evidence         | PostToolUse           | SHA-256 ハッシュチェーン証跡                  |
-| 7   | output-control   | PostToolUse           | 出力トランケーション + トークン予算           |
-| 8   | dep-audit        | PostToolUse           | パッケージインストール検出                    |
-| 9   | lint-on-save     | PostToolUse           | 自動 lint 実行                                |
-| 10  | session-start    | SessionStart          | セッション初期化 + 整合性ベースライン         |
-| 11  | session-end      | SessionEnd            | クリーンアップ + 統計                         |
-| 12  | circuit-breaker  | Stop                  | リトライ上限 (3 回)                           |
-| 13  | config-guard     | ConfigChange          | 設定変更の監視                                |
-| 14  | user-prompt      | UserPromptSubmit      | ユーザー入力のインジェクション検査            |
-| 15  | permission-learn | PermissionRequest     | 権限学習ガード                                |
-| 16  | elicitation      | Elicitation           | フィッシング + スコープガード                 |
-| 17  | subagent         | SubagentStart         | サブエージェント予算制約 (25%)                |
-| 18  | instructions     | InstructionsLoaded    | ルールファイル整合性監視                      |
-| 19  | precompact       | PreCompact            | コンパクション前バックアップ                  |
-| 20  | postcompact      | PostCompact           | コンパクション後復元 + 検証                   |
-| 21  | worktree         | WorktreeCreate/Remove | セキュリティ伝播 + 証跡マージ                 |
-| 22  | task-gate        | TaskCompleted         | テストゲート                                  |
+| #   | フック           | イベント              | 責務                                            |
+| --- | ---------------- | --------------------- | ----------------------------------------------- |
+| 1   | permission       | PreToolUse            | ツール使用の 4 カテゴリ分類                     |
+| 2   | gate             | PreToolUse            | Bash コマンドの 7 攻撃ベクトル検査              |
+| 3   | injection-guard  | PreToolUse            | 9 カテゴリ 50+ パターンのインジェクション検出   |
+| 4   | data-boundary    | PreToolUse            | 本番データ境界 + 管轄追跡                       |
+| 5   | quiet-inject     | PreToolUse            | quiet フラグ自動注入                            |
+| 6   | evidence         | PostToolUse           | SHA-256 ハッシュチェーン証跡                    |
+| 7   | output-control   | PostToolUse           | 出力トランケーション + トークン予算             |
+| 8   | dep-audit        | PostToolUse           | パッケージインストール検出                      |
+| 9   | lint-on-save     | PostToolUse           | 自動 lint 実行                                  |
+| 10  | session-start    | SessionStart          | セッション初期化 + 整合性ベースライン           |
+| 11  | session-end      | SessionEnd            | クリーンアップ + 統計                           |
+| 12  | circuit-breaker  | Stop                  | リトライ上限 (3 回)                             |
+| 13  | config-guard     | ConfigChange          | 設定変更の監視 + OpenShell ポリシーファイル保護 |
+| 14  | user-prompt      | UserPromptSubmit      | ユーザー入力のインジェクション検査              |
+| 15  | permission-learn | PermissionRequest     | 権限学習ガード                                  |
+| 16  | elicitation      | Elicitation           | フィッシング + スコープガード                   |
+| 17  | subagent         | SubagentStart         | サブエージェント予算制約 (25%)                  |
+| 18  | instructions     | InstructionsLoaded    | ルールファイル整合性監視                        |
+| 19  | precompact       | PreCompact            | コンパクション前バックアップ                    |
+| 20  | postcompact      | PostCompact           | コンパクション後復元 + 検証                     |
+| 21  | worktree         | WorktreeCreate/Remove | セキュリティ伝播 + 証跡マージ                   |
+| 22  | task-gate        | TaskCompleted         | テストゲート                                    |
 
 ## パイプライン
 
@@ -151,7 +151,7 @@ Windows ユーザーにとっての主なメリット:
 - 残余リスクを 5% から 1% 未満に低減
 - 自由に取り外し可能 — コンテナを停止すれば Shield Harness は Layer 1-2 にフォールバック
 
-> **注意**: OpenShell は Alpha（v0.0.13）— API は将来変更の可能性があります。
+> **注意**: OpenShell は Alpha（v0.0.13）— API は将来変更の可能性があります。Shield Harness 側の GA Phase 統合は完了済み（ADR-037）: config guard によるポリシーファイル保護、ポリシードリフトチェック、全ドキュメント整備が完了しています。
 
 ## チャンネル連携
 

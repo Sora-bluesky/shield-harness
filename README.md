@@ -50,30 +50,30 @@ npx shield-harness init [--profile minimal|standard|strict]
 
 ## Hook Catalog
 
-| #   | Hook             | Event                 | Responsibility                                   |
-| --- | ---------------- | --------------------- | ------------------------------------------------ |
-| 1   | permission       | PreToolUse            | 4-category tool usage classification             |
-| 2   | gate             | PreToolUse            | 7 attack vector inspection for Bash commands     |
-| 3   | injection-guard  | PreToolUse            | 9-category 50+ pattern injection detection       |
-| 4   | data-boundary    | PreToolUse            | Production data boundary + jurisdiction tracking |
-| 5   | quiet-inject     | PreToolUse            | Auto-inject quiet flags                          |
-| 6   | evidence         | PostToolUse           | SHA-256 hash chain evidence                      |
-| 7   | output-control   | PostToolUse           | Output truncation + token budget                 |
-| 8   | dep-audit        | PostToolUse           | Package install detection                        |
-| 9   | lint-on-save     | PostToolUse           | Auto lint execution                              |
-| 10  | session-start    | SessionStart          | Session init + integrity baseline                |
-| 11  | session-end      | SessionEnd            | Cleanup + statistics                             |
-| 12  | circuit-breaker  | Stop                  | Retry limit (3 attempts)                         |
-| 13  | config-guard     | ConfigChange          | Settings change monitoring                       |
-| 14  | user-prompt      | UserPromptSubmit      | User input injection scanning                    |
-| 15  | permission-learn | PermissionRequest     | Permission learning guard                        |
-| 16  | elicitation      | Elicitation           | Phishing + scope guard                           |
-| 17  | subagent         | SubagentStart         | Subagent budget constraint (25%)                 |
-| 18  | instructions     | InstructionsLoaded    | Rule file integrity monitoring                   |
-| 19  | precompact       | PreCompact            | Pre-compaction backup                            |
-| 20  | postcompact      | PostCompact           | Post-compaction restore + verify                 |
-| 21  | worktree         | WorktreeCreate/Remove | Security propagation + evidence merge            |
-| 22  | task-gate        | TaskCompleted         | Test gate                                        |
+| #   | Hook             | Event                 | Responsibility                                                |
+| --- | ---------------- | --------------------- | ------------------------------------------------------------- |
+| 1   | permission       | PreToolUse            | 4-category tool usage classification                          |
+| 2   | gate             | PreToolUse            | 7 attack vector inspection for Bash commands                  |
+| 3   | injection-guard  | PreToolUse            | 9-category 50+ pattern injection detection                    |
+| 4   | data-boundary    | PreToolUse            | Production data boundary + jurisdiction tracking              |
+| 5   | quiet-inject     | PreToolUse            | Auto-inject quiet flags                                       |
+| 6   | evidence         | PostToolUse           | SHA-256 hash chain evidence                                   |
+| 7   | output-control   | PostToolUse           | Output truncation + token budget                              |
+| 8   | dep-audit        | PostToolUse           | Package install detection                                     |
+| 9   | lint-on-save     | PostToolUse           | Auto lint execution                                           |
+| 10  | session-start    | SessionStart          | Session init + integrity baseline                             |
+| 11  | session-end      | SessionEnd            | Cleanup + statistics                                          |
+| 12  | circuit-breaker  | Stop                  | Retry limit (3 attempts)                                      |
+| 13  | config-guard     | ConfigChange          | Settings change monitoring + OpenShell policy file protection |
+| 14  | user-prompt      | UserPromptSubmit      | User input injection scanning                                 |
+| 15  | permission-learn | PermissionRequest     | Permission learning guard                                     |
+| 16  | elicitation      | Elicitation           | Phishing + scope guard                                        |
+| 17  | subagent         | SubagentStart         | Subagent budget constraint (25%)                              |
+| 18  | instructions     | InstructionsLoaded    | Rule file integrity monitoring                                |
+| 19  | precompact       | PreCompact            | Pre-compaction backup                                         |
+| 20  | postcompact      | PostCompact           | Post-compaction restore + verify                              |
+| 21  | worktree         | WorktreeCreate/Remove | Security propagation + evidence merge                         |
+| 22  | task-gate        | TaskCompleted         | Test gate                                                     |
 
 ## Pipeline
 
@@ -149,7 +149,7 @@ Key benefits for Windows users:
 - Reduces residual risk from 5% to <1%
 - Freely removable — stop the container and Shield Harness falls back to Layer 1-2
 
-> **Note**: OpenShell is Alpha (v0.0.13) — APIs may change with future releases.
+> **Note**: OpenShell is Alpha (v0.0.13) — APIs may change with future releases. Shield Harness GA Phase integration is complete (ADR-037): config guard policy file protection, policy drift check, and full documentation are ready.
 
 ## Channel Integration
 

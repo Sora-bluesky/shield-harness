@@ -18,6 +18,7 @@ const {
 const HOOK_NAME = "sh-config-guard";
 const SETTINGS_FILE = path.join(".claude", "settings.json");
 const CONFIG_HASH_FILE = path.join(".claude", "logs", "config-hash.json");
+const POLICIES_DIR = path.join(".claude", "policies");
 
 // ---------------------------------------------------------------------------
 // Config Analysis
@@ -64,9 +65,90 @@ function saveConfigSnapshot(snapshot) {
 }
 
 /**
+ * Count items in a YAML list section.
+ * Matches a section header like "deny_read:" followed by indented list items.
+ * @param {string} content - YAML file content
+ * @param {string} sectionName - Name of the YAML section to count
+ * @returns {number} Number of list items in the section
+ */
+function countYamlListItems(content, sectionName) {
+  const regex = new RegExp(sectionName + ":\\n((?:\\s+-\\s+.+\\n)*)", "m");
+  const match = content.match(regex);
+  if (!match) return 0;
+  return match[1].split("\n").filter((l) => l.trim().startsWith("- ")).length;
+}
+
+/**
+ * Count host: entries in network_policies section.
+ * @param {string} content - YAML file content
+ * @returns {number} Number of network endpoint entries
+ */
+function countNetworkEndpoints(content) {
+  const matches = content.match(/^\s+[-\s]*host:\s/gm);
+  return matches ? matches.length : 0;
+}
+
+/**
+ * Scan .claude/policies/ for YAML files and compute SHA-256 hash of each.
+ * @returns {Object.<string, string>} Map of file path to SHA-256 hash
+ */
+function extractPolicyHashes() {
+  const hashes = {};
+  if (!fs.existsSync(POLICIES_DIR)) return hashes;
+  try {
+    const files = fs
+      .readdirSync(POLICIES_DIR)
+      .filter((f) => f.endsWith(".yaml") || f.endsWith(".yml"));
+    for (const file of files) {
+      const filePath = path.join(POLICIES_DIR, file);
+      try {
+        const content = fs.readFileSync(filePath, "utf8");
+        hashes[filePath] = sha256(content);
+      } catch {
+        /* skip unreadable */
+      }
+    }
+  } catch {
+    /* dir read error */
+  }
+  return hashes;
+}
+
+/**
+ * Extract security-critical counts from each YAML policy file.
+ * @returns {Object.<string, { deny_read_count: number, deny_write_count: number, read_write_count: number, network_endpoint_count: number }>}
+ */
+function extractPolicyMetrics() {
+  const metrics = {};
+  if (!fs.existsSync(POLICIES_DIR)) return metrics;
+  try {
+    const files = fs
+      .readdirSync(POLICIES_DIR)
+      .filter((f) => f.endsWith(".yaml") || f.endsWith(".yml"));
+    for (const file of files) {
+      const filePath = path.join(POLICIES_DIR, file);
+      try {
+        const content = fs.readFileSync(filePath, "utf8");
+        metrics[filePath] = {
+          deny_read_count: countYamlListItems(content, "deny_read"),
+          deny_write_count: countYamlListItems(content, "deny_write"),
+          read_write_count: countYamlListItems(content, "read_write"),
+          network_endpoint_count: countNetworkEndpoints(content),
+        };
+      } catch {
+        /* skip */
+      }
+    }
+  } catch {
+    /* dir read error */
+  }
+  return metrics;
+}
+
+/**
  * Extract security-critical fields from settings.
  * @param {Object} settings
- * @returns {{ deny_rules: string[], hook_count: number, hook_events: string[], hook_commands: string[], sandbox: boolean, unsandboxed: boolean, disableAllHooks: boolean }}
+ * @returns {{ deny_rules: string[], hook_count: number, hook_events: string[], hook_commands: string[], sandbox: boolean, unsandboxed: boolean, disableAllHooks: boolean, policy_hashes: Object, policy_metrics: Object }}
  */
 function extractSecurityFields(settings) {
   const denyRules = (settings.permissions && settings.permissions.deny) || [];
@@ -100,6 +182,8 @@ function extractSecurityFields(settings) {
         : true,
     unsandboxed: Boolean(settings.allowUnsandboxedCommands),
     disableAllHooks: Boolean(settings.disableAllHooks),
+    policy_hashes: extractPolicyHashes(),
+    policy_metrics: extractPolicyMetrics(),
   };
 }
 
@@ -154,6 +238,52 @@ function detectDangerousMutations(stored, current) {
   // Check 5: all hooks disabled
   if (!stored.disableAllHooks && current.disableAllHooks) {
     reasons.push("disableAllHooks set to true");
+  }
+
+  // Check 6: OpenShell policy file tampering (ADR-037 GA Phase)
+  const storedHashes = stored.policy_hashes || {};
+  const currentHashes = current.policy_hashes || {};
+  const storedMetrics = stored.policy_metrics || {};
+  const currentMetrics = current.policy_metrics || {};
+
+  for (const [filePath, storedHash] of Object.entries(storedHashes)) {
+    if (!(filePath in currentHashes)) {
+      // Policy file was deleted
+      reasons.push(`OpenShell policy file removed: "${filePath}"`);
+      continue;
+    }
+    if (currentHashes[filePath] !== storedHash) {
+      // Policy file changed — check for weakening
+      const sm = storedMetrics[filePath] || {};
+      const cm = currentMetrics[filePath] || {};
+
+      if (
+        sm.deny_read_count > 0 &&
+        (cm.deny_read_count || 0) < sm.deny_read_count
+      ) {
+        reasons.push(
+          `OpenShell policy weakened: deny_read reduced (${sm.deny_read_count} → ${cm.deny_read_count || 0}) in "${filePath}"`,
+        );
+      }
+      if (
+        sm.deny_write_count > 0 &&
+        (cm.deny_write_count || 0) < sm.deny_write_count
+      ) {
+        reasons.push(
+          `OpenShell policy weakened: deny_write reduced (${sm.deny_write_count} → ${cm.deny_write_count || 0}) in "${filePath}"`,
+        );
+      }
+      if ((cm.network_endpoint_count || 0) > (sm.network_endpoint_count || 0)) {
+        reasons.push(
+          `OpenShell policy weakened: network endpoints expanded (${sm.network_endpoint_count || 0} → ${cm.network_endpoint_count}) in "${filePath}"`,
+        );
+      }
+      if ((cm.read_write_count || 0) > (sm.read_write_count || 0)) {
+        reasons.push(
+          `OpenShell policy weakened: read_write paths expanded (${sm.read_write_count || 0} → ${cm.read_write_count}) in "${filePath}"`,
+        );
+      }
+    }
   }
 
   return {
@@ -272,4 +402,8 @@ module.exports = {
   saveConfigSnapshot,
   extractSecurityFields,
   detectDangerousMutations,
+  extractPolicyHashes,
+  extractPolicyMetrics,
+  countYamlListItems,
+  countNetworkEndpoints,
 };
