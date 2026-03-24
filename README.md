@@ -109,6 +109,31 @@ For enterprise environments, supplementing with Windows Firewall outbound rules 
 
 ### Layer 3b: NVIDIA OpenShell (Optional)
 
+#### Why Layer 3b?
+
+Layer 1 (permissions) and Layer 2 (hooks) inspect tool call inputs — the command text before execution. Once a command passes these checks, the **spawned child process runs freely at the OS level**.
+
+```
+Layer 1-2 (in-process):
+  Claude Code → [Hook inspects input] → Command execution → [Child process is free]
+                 ↑ Only controls this point
+
+Layer 3b (out-of-process = kernel-level):
+  Claude Code → Command execution → [Landlock: Filesystem access control]
+                                     [Seccomp: Syscall control]
+                                     [Network NS: Network isolation]
+                ↑ Kernel controls ALL processes including children
+```
+
+| Attack Vector            | Layer 1-2 Defense           | Why It Bypasses                        | Layer 3b Defense                      |
+| ------------------------ | --------------------------- | -------------------------------------- | ------------------------------------- |
+| Pipe chain file access   | Pattern matching            | Indirect access via `awk`, `python -c` | Landlock LSM denies at kernel level   |
+| Raw socket communication | `curl`/`wget` deny rules    | Direct socket via `python`/`node`      | Seccomp BPF blocks socket syscalls    |
+| DNS tunneling            | sandbox.network (WSL2 only) | Data embedded in DNS queries           | Network Namespace isolates all DNS    |
+| PowerShell sockets       | Pattern matching            | Encoding/obfuscation                   | Seccomp BPF + Network NS dual defense |
+
+**Structural guarantee**: The agent **cannot** disable its own guardrails — policies exist outside the container and are locked at sandbox creation.
+
 [NVIDIA OpenShell](https://github.com/NVIDIA/OpenShell) (Apache 2.0) provides **kernel-level isolation** for AI agents via Docker:
 
 | Mechanism    | Target     | Protection                |

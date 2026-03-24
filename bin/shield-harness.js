@@ -209,6 +209,84 @@ function printBasicGuide() {
 }
 
 // ---------------------------------------------------------------------------
+// generate-policy command
+// ---------------------------------------------------------------------------
+
+const POLICY_PROFILES = ["standard", "strict"];
+const DEFAULT_POLICY_OUTPUT = path.join(
+  ".claude",
+  "policies",
+  "openshell-generated.yaml",
+);
+
+/**
+ * Generate OpenShell policy YAML from permissions-spec.json.
+ * @param {string[]} args - CLI arguments (after "generate-policy")
+ */
+function generatePolicy(args) {
+  // Parse --output
+  let output = DEFAULT_POLICY_OUTPUT;
+  const outputIdx = args.indexOf("--output");
+  if (outputIdx !== -1 && args[outputIdx + 1]) {
+    output = args[outputIdx + 1];
+  }
+
+  // Parse --profile
+  let profile = "standard";
+  const profileIdx = args.indexOf("--profile");
+  if (profileIdx !== -1 && args[profileIdx + 1]) {
+    profile = args[profileIdx + 1];
+    if (!POLICY_PROFILES.includes(profile)) {
+      console.error(`Unknown profile: ${profile}`);
+      console.error(`Available profiles: ${POLICY_PROFILES.join(", ")}`);
+      process.exit(1);
+    }
+  }
+
+  // Read permissions-spec.json
+  const specPath = path.join(process.cwd(), ".claude", "permissions-spec.json");
+  if (!fs.existsSync(specPath)) {
+    console.error("permissions-spec.json not found at: " + specPath);
+    console.error("Run 'npx shield-harness init' first.");
+    process.exit(1);
+  }
+
+  let spec;
+  try {
+    spec = JSON.parse(fs.readFileSync(specPath, "utf8"));
+  } catch (err) {
+    console.error("Failed to parse permissions-spec.json: " + err.message);
+    process.exit(1);
+  }
+
+  // Generate YAML
+  let yaml;
+  try {
+    const {
+      generatePolicyYaml,
+    } = require("../.claude/hooks/lib/tier-policy-gen");
+    yaml = generatePolicyYaml(spec, { profile });
+  } catch (err) {
+    console.error("Failed to generate policy: " + err.message);
+    process.exit(1);
+  }
+
+  // Write output
+  const outputPath = path.resolve(process.cwd(), output);
+  const outputDir = path.dirname(outputPath);
+  if (!fs.existsSync(outputDir)) {
+    fs.mkdirSync(outputDir, { recursive: true });
+  }
+  fs.writeFileSync(outputPath, yaml);
+
+  console.log(`Policy generated successfully (profile: ${profile}).`);
+  console.log(`  Output: ${output}`);
+  console.log("");
+  console.log("Usage:");
+  console.log(`  openshell sandbox create --policy ${output} -- claude`);
+}
+
+// ---------------------------------------------------------------------------
 // CLI
 // ---------------------------------------------------------------------------
 
@@ -227,12 +305,17 @@ if (command === "init") {
     }
   }
   init(profile);
+} else if (command === "generate-policy") {
+  generatePolicy(args);
 } else {
   const pkg = require("../package.json");
   console.log(`Shield Harness v${pkg.version}`);
   console.log("");
   console.log("Usage:");
   console.log("  npx shield-harness init [--profile minimal|standard|strict]");
+  console.log(
+    "  npx shield-harness generate-policy [--output <path>] [--profile standard|strict]",
+  );
   console.log("");
   console.log("Profiles:");
   console.log("  minimal   — Minimal config, approval-free");

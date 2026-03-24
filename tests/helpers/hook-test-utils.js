@@ -152,6 +152,42 @@ function cleanupTempDir(tmpDir) {
   }
 }
 
+// --- Mock child_process.execSync ---
+
+/**
+ * Mock child_process.execSync for testing modules that shell out.
+ * Accepts a map of command prefix -> response (string or Error).
+ * Matches commands by prefix (startsWith).
+ * @param {Object.<string, string|Error>} responses - { "docker --version": "Docker 24.0.0", "openshell": new Error("not found") }
+ * @returns {{ restore: Function }}
+ */
+function mockExecSync(responses) {
+  const cp = require("child_process");
+  const originalExecSync = cp.execSync;
+
+  cp.execSync = (cmd, opts) => {
+    const cmdStr = typeof cmd === "string" ? cmd : String(cmd);
+    for (const [prefix, response] of Object.entries(responses)) {
+      if (cmdStr.startsWith(prefix)) {
+        if (response instanceof Error) {
+          throw response;
+        }
+        return typeof response === "string" ? response : String(response);
+      }
+    }
+    // No match — simulate command not found
+    const err = new Error(`Command not found (mocked): ${cmdStr}`);
+    err.status = 1;
+    throw err;
+  };
+
+  return {
+    restore: () => {
+      cp.execSync = originalExecSync;
+    },
+  };
+}
+
 // --- Helpers ---
 
 function safeParseJSON(str) {
@@ -167,6 +203,7 @@ module.exports = {
   HookExit,
   mockProcessExit,
   mockStdout,
+  mockExecSync,
   runHookProcess,
   buildHookInput,
   createTempDir,

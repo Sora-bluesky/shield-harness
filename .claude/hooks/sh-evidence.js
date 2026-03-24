@@ -111,8 +111,9 @@ try {
 
   // Check channel source for evidence metadata (§8.6.3)
   let isChannel = false;
+  let session = {};
   try {
-    const session = readSession();
+    session = readSession();
     isChannel = session.source === "channel";
   } catch {
     // Session read failure is non-blocking for evidence
@@ -135,6 +136,18 @@ try {
     category: null,
     is_channel: isChannel,
     session_id: sessionId,
+    // OpenShell metadata (Beta Phase)
+    sandbox_state:
+      session.sandbox_openshell && session.sandbox_openshell.available
+        ? "active"
+        : "inactive",
+    sandbox_version:
+      (session.sandbox_openshell && session.sandbox_openshell.version) || null,
+    sandbox_policy_enforced: !!(
+      session.sandbox_openshell &&
+      session.sandbox_openshell.available &&
+      session.sandbox_openshell.container_running
+    ),
   };
 
   // Collect context messages
