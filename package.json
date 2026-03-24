@@ -20,7 +20,8 @@
     "test:config": "node --test tests/config-guard-evasion.test.js",
     "test:boundary": "node --test tests/data-boundary-evasion.test.js",
     "test:output": "node --test tests/output-security.test.js",
-    "test:ocsf": "node --test tests/ocsf-mapper.test.js"
+    "test:ocsf": "node --test tests/ocsf-mapper.test.js",
+    "test:policy-compat": "node --test tests/policy-compat.test.js"
   },
   "keywords": [
     "claude-code",
