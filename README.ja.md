@@ -6,6 +6,8 @@
 
 > 承認ダイアログなしで安全な自律開発を実現
 
+> **Alpha (v0.1.0)**: セキュリティモデルは開発中です。パーミッションルールと設計ドキュメントの整合作業を進めています。本番利用は推奨しません。
+
 [![English](https://img.shields.io/badge/lang-English-blue?style=flat-square)](README.md)
 [![日本語](https://img.shields.io/badge/lang-日本語-red?style=flat-square)](#)
 
