@@ -2,9 +2,9 @@
 
 # Shield Harness
 
-**Auto-defense security harness for Claude Code — approval-free, safe autonomous development**
+**Hook-driven auto-defense security harness for Claude Code**
 
-> **Alpha (v0.1.0)**: Security model is under active development. Permission rules and design documents are being aligned. Not recommended for production use yet.
+> **v0.4.0**: 22 hooks, 4-layer defense (L1 Permissions + L2 Hooks + L3 Sandbox + L3b OpenShell), 391 tests including 108 OWASP AITG attack simulation tests.
 
 [![English](https://img.shields.io/badge/lang-English-blue?style=flat-square)](#)
 [![日本語](https://img.shields.io/badge/lang-日本語-red?style=flat-square)](README.ja.md)
@@ -25,13 +25,13 @@ npx shield-harness init [--profile minimal|standard|strict]
 ## Why Shield Harness
 
 - **Hooks-driven defense**: 22 security hooks monitor every Claude Code operation
-- **Approval-free mode**: Delegate all security decisions to hooks, eliminating human approval dialogs
+- **Automated security decisions**: Hooks handle all security judgments in real time — no manual approval bottleneck
 - **fail-close principle**: Automatically stops when safety conditions cannot be verified
 - **Evidence recording**: Tamper-proof SHA-256 hash chain records all allow/deny decisions
 
 ## Architecture Overview
 
-3-layer defense model:
+4-layer defense model:
 
 | Layer    | Defense            | Implementation                                     |
 | -------- | ------------------ | -------------------------------------------------- |
@@ -146,10 +146,62 @@ Key benefits for Windows users:
 
 - Policies exist **outside** the agent process — the agent cannot disable its own guardrails
 - Runs on Docker Desktop + WSL2 backend (typical Windows dev setup)
-- Reduces residual risk from 5% to <1%
+- Significantly reduces residual risk from Layer 1-2 pattern matching limitations
 - Freely removable — stop the container and Shield Harness falls back to Layer 1-2
 
 > **Note**: OpenShell is Alpha (v0.0.13) — APIs may change with future releases. Shield Harness GA Phase integration is complete (ADR-037): config guard policy file protection, policy drift check, and full documentation are ready.
+
+#### Setup
+
+**Prerequisites**: [Docker Desktop](https://www.docker.com/products/docker-desktop/) (WSL2 backend on Windows)
+
+```bash
+# 1. Install Docker Desktop and verify it is running
+#    https://www.docker.com/products/docker-desktop/
+docker --version
+
+# 2. Install OpenShell CLI
+pip install openshell
+
+# 3. Generate policy from permissions-spec.json
+#    Creates .claude/policies/openshell-generated.yaml
+npx shield-harness policy generate
+
+# 4. Start OpenShell container and run Claude Code inside it
+#    Docker pulls the sandbox image automatically on first run
+#    Kernel-level enforcement (Landlock/Seccomp/Network NS) is active inside the container
+openshell run --policy .claude/policies/openshell-generated.yaml
+```
+
+Claude Code running inside the OpenShell container automatically receives Layer 3b kernel enforcement. Shield Harness detects this at session start (`sh-session-start.js`) — no additional configuration required.
+
+Without OpenShell, Shield Harness falls back to Layer 1-2 defense (no degradation in hook protection).
+
+Policy files are protected by:
+
+- `permissions.deny`: `Edit/Write(.claude/policies/**)` blocks agent modification
+- `sandbox.denyWrite`: `.claude/policies` in filesystem deny list
+- `sh-config-guard.js`: Hash tracking detects policy file tampering or weakening
+- `sh-session-start.js`: Drift check at session start verifies spec-policy alignment
+
+## Testing
+
+```bash
+# Run all tests (391 tests including 108 OWASP AITG attack simulations)
+npm test
+
+# Run attack simulation tests only
+node --test tests/attack-sim-*.test.js
+```
+
+| Test Suite                    | OWASP Category                         | Tests |
+| ----------------------------- | -------------------------------------- | ----- |
+| attack-sim-prompt-injection   | AITG-APP-01: Direct Prompt Injection   | 25    |
+| attack-sim-indirect-injection | AITG-APP-02: Indirect Prompt Injection | 18    |
+| attack-sim-data-leak          | AITG-APP-03: Sensitive Data Leak       | 20    |
+| attack-sim-agentic-limits     | AITG-APP-06: Agentic Behavior Limits   | 18    |
+| attack-sim-sandbox-escape     | NVIDIA 3-axis: Sandbox Escape          | 15    |
+| attack-sim-defense-chain      | SAIF: Defense-in-depth Chain           | 12    |
 
 ## Channel Integration
 
@@ -178,11 +230,11 @@ Shield Harness follows [Semantic Versioning](https://semver.org/):
 | `minor` | New features (backward compatible), Phase must-tasks completed | OCSF support, new hook, CLI option   |
 | `major` | Breaking changes                                               | Schema incompatible, settings change |
 
-**Release trigger**: `git tag v1.x.x && git push origin v1.x.x` triggers `release.yml` (automated npm publish + GitHub Release). Security fixes trigger an immediate patch release.
+**Release trigger**: `git tag vX.Y.Z && git push origin vX.Y.Z` triggers `release.yml` (automated npm publish + GitHub Release). Security fixes trigger an immediate patch release.
 
 ## References
 
-Shield Harness was designed by surveying 40+ Claude Code security projects. Key references:
+Key references:
 
 | Project                                                                      | Influence                                                                                                          |
 | ---------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------ |

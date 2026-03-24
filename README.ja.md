@@ -4,9 +4,9 @@
 
 **Claude Code の全操作を自動防御するセキュリティハーネス**
 
-> 承認ダイアログなしで安全な自律開発を実現
+> フック駆動の自動判定で安全な自律開発を実現
 
-> **Alpha (v0.1.0)**: セキュリティモデルは開発中です。パーミッションルールと設計ドキュメントの整合作業を進めています。本番利用は推奨しません。
+> **v0.4.0**: 22 フック、4 層防御（L1 権限 + L2 フック + L3 サンドボックス + L3b OpenShell）、391 テスト（OWASP AITG 攻撃シミュレーション 108 テスト含む）。
 
 [![English](https://img.shields.io/badge/lang-English-blue?style=flat-square)](README.md)
 [![日本語](https://img.shields.io/badge/lang-日本語-red?style=flat-square)](#)
@@ -16,7 +16,7 @@
 ## Shield Harness とは
 
 Claude Code の全操作を自動防御するセキュリティハーネス。
-承認ダイアログなしで安全な自律開発を実現します。`.claude/` ディレクトリに展開される hooks + rules + permissions による多層防御でエージェントを統制します。
+フック駆動の自動判定で安全な自律開発を実現します。`.claude/` ディレクトリに展開される hooks + rules + permissions による多層防御でエージェントを統制します。
 
 ## クイックスタート
 
@@ -27,13 +27,13 @@ npx shield-harness init [--profile minimal|standard|strict]
 ## なぜ Shield Harness なのか
 
 - **フック駆動の防御**: 22 のセキュリティフックが Claude Code の全操作を監視
-- **承認レスモード**: hooks に全セキュリティ判定を委譲し、人間の承認ダイアログを排除
+- **自動セキュリティ判定**: hooks が全セキュリティ判断をリアルタイムで処理 — 手動承認のボトルネックなし
 - **fail-close 原則**: 安全条件を確認できない場合は自動的に停止
 - **証跡記録**: SHA-256 ハッシュチェーンで全 allow/deny 決定を改ざん不能な形で記録
 
 ## アーキテクチャ概要
 
-3 層防御モデル:
+4 層防御モデル:
 
 | 層       | 防御                   | 実装                                                          |
 | -------- | ---------------------- | ------------------------------------------------------------- |
@@ -148,10 +148,62 @@ Windows ユーザーにとっての主なメリット:
 
 - ポリシーがエージェントプロセスの**外部**に存在 — エージェント自身がガードレールを無効化できない
 - Docker Desktop + WSL2 バックエンド（一般的な Windows 開発環境）で動作
-- 残余リスクを 5% から 1% 未満に低減
+- Layer 1-2 のパターンマッチング限界による残余リスクを大幅に低減
 - 自由に取り外し可能 — コンテナを停止すれば Shield Harness は Layer 1-2 にフォールバック
 
 > **注意**: OpenShell は Alpha（v0.0.13）— API は将来変更の可能性があります。Shield Harness 側の GA Phase 統合は完了済み（ADR-037）: config guard によるポリシーファイル保護、ポリシードリフトチェック、全ドキュメント整備が完了しています。
+
+#### セットアップ
+
+**前提条件**: [Docker Desktop](https://www.docker.com/products/docker-desktop/)（Windows では WSL2 バックエンド）
+
+```bash
+# 1. Docker Desktop をインストールし、起動を確認
+#    https://www.docker.com/products/docker-desktop/
+docker --version
+
+# 2. OpenShell CLI のインストール
+pip install openshell
+
+# 3. permissions-spec.json からポリシーを生成
+#    .claude/policies/openshell-generated.yaml が作成されます
+npx shield-harness policy generate
+
+# 4. OpenShell コンテナを起動し、その中で Claude Code を実行
+#    初回実行時に Docker がサンドボックスイメージを自動取得します
+#    コンテナ内ではカーネルレベル制限（Landlock/Seccomp/Network NS）が自動適用されます
+openshell run --policy .claude/policies/openshell-generated.yaml
+```
+
+OpenShell コンテナ内で動作する Claude Code には、Layer 3b のカーネル強制が自動的に適用されます。Shield Harness はセッション開始時にこれを検出します（`sh-session-start.js`）— 追加設定は不要です。
+
+OpenShell なしの場合、Shield Harness は Layer 1-2 防御にフォールバックします（フック保護に劣化なし）。
+
+ポリシーファイルは以下で保護されます:
+
+- `permissions.deny`: `Edit/Write(.claude/policies/**)` でエージェントによる変更をブロック
+- `sandbox.denyWrite`: `.claude/policies` がファイルシステム deny リストに含まれる
+- `sh-config-guard.js`: ハッシュ追跡でポリシーファイルの改竄・弱体化を検出
+- `sh-session-start.js`: セッション開始時のドリフトチェックで spec-policy 整合性を検証
+
+## テスト
+
+```bash
+# 全テスト実行（391 テスト、OWASP AITG 攻撃シミュレーション 108 テスト含む）
+npm test
+
+# 攻撃シミュレーションテストのみ実行
+node --test tests/attack-sim-*.test.js
+```
+
+| テストスイート                | OWASP カテゴリ                         | テスト数 |
+| ----------------------------- | -------------------------------------- | -------- |
+| attack-sim-prompt-injection   | AITG-APP-01: Direct Prompt Injection   | 25       |
+| attack-sim-indirect-injection | AITG-APP-02: Indirect Prompt Injection | 18       |
+| attack-sim-data-leak          | AITG-APP-03: Sensitive Data Leak       | 20       |
+| attack-sim-agentic-limits     | AITG-APP-06: Agentic Behavior Limits   | 18       |
+| attack-sim-sandbox-escape     | NVIDIA 3-axis: Sandbox Escape          | 15       |
+| attack-sim-defense-chain      | SAIF: Defense-in-depth Chain           | 12       |
 
 ## チャンネル連携
 
@@ -180,11 +232,11 @@ Shield Harness は [Semantic Versioning](https://semver.org/) に準拠します
 | `minor` | 新機能（後方互換）、Phase 内 must タスク全完了時 | OCSF 対応、新フック追加、CLI オプション追加 |
 | `major` | 破壊的変更                                       | スキーマ非互換変更、settings 構造変更       |
 
-**リリーストリガー**: `git tag v1.x.x && git push origin v1.x.x` で `release.yml` が自動実行（npm publish + GitHub Release）。セキュリティ修正は即座に patch リリース。
+**リリーストリガー**: `git tag vX.Y.Z && git push origin vX.Y.Z` で `release.yml` が自動実行（npm publish + GitHub Release）。セキュリティ修正は即座に patch リリース。
 
 ## 参考プロジェクト
 
-Shield Harness は 40 以上の Claude Code セキュリティプロジェクトを調査して設計されました。主な参考:
+主な参考プロジェクト:
 
 | プロジェクト                                                                 | 影響を受けた点                                                                                                       |
 | ---------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------- |
