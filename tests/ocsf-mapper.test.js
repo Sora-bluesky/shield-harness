@@ -260,3 +260,111 @@ describe("Channel metadata in OCSF output", () => {
     assert.equal(finding.unmapped.channel_source, "telegram");
   });
 });
+
+// ---------------------------------------------------------------------------
+// OpenShell sandbox metadata (Beta Phase)
+// ---------------------------------------------------------------------------
+
+describe("OpenShell sandbox metadata in OCSF output", () => {
+  it("should add container resource with correct labels when sandbox_state is active", () => {
+    const entry = {
+      hook: "sh-evidence",
+      decision: "allow",
+      event: "PostToolUse",
+      tool: "Bash",
+      seq: 10,
+      session_id: "sess-sandbox-1",
+      sandbox_state: "active",
+      sandbox_version: "0.3.1",
+      sandbox_policy_enforced: true,
+    };
+    const finding = toDetectionFinding(entry);
+
+    // Should have two resources: tool + container
+    assert.equal(finding.resources.length, 2);
+    assert.equal(finding.resources[0].type, "tool");
+    assert.equal(finding.resources[0].name, "Bash");
+
+    const container = finding.resources[1];
+    assert.equal(container.type, "container");
+    assert.equal(container.name, "openshell-sandbox");
+    assert.ok(container.labels.includes("state:active"));
+    assert.ok(container.labels.includes("version:0.3.1"));
+    assert.ok(container.labels.includes("policy_enforced:true"));
+  });
+
+  it("should add container resource without tool when sandbox_state is active and no tool", () => {
+    const entry = {
+      hook: "sh-session-start",
+      decision: "allow",
+      event: "SessionStart",
+      sandbox_state: "active",
+      sandbox_version: "0.3.0",
+      sandbox_policy_enforced: false,
+    };
+    const finding = toDetectionFinding(entry);
+
+    // Should have one resource: container only (no tool)
+    assert.equal(finding.resources.length, 1);
+    const container = finding.resources[0];
+    assert.equal(container.type, "container");
+    assert.equal(container.name, "openshell-sandbox");
+    assert.ok(container.labels.includes("state:active"));
+    assert.ok(container.labels.includes("version:0.3.0"));
+    // sandbox_policy_enforced is false, so no policy_enforced label
+    assert.ok(!container.labels.includes("policy_enforced:true"));
+  });
+
+  it("should not add container resource when sandbox_state is absent", () => {
+    const entry = {
+      hook: "sh-evidence",
+      decision: "allow",
+      event: "PostToolUse",
+      tool: "Bash",
+      seq: 11,
+    };
+    const finding = toDetectionFinding(entry);
+
+    // Should have only the tool resource
+    assert.equal(finding.resources.length, 1);
+    assert.equal(finding.resources[0].type, "tool");
+    assert.equal(finding.resources[0].name, "Bash");
+  });
+
+  it("should not include sandbox fields in unmapped", () => {
+    const entry = {
+      hook: "sh-evidence",
+      decision: "allow",
+      event: "PostToolUse",
+      tool: "Bash",
+      seq: 12,
+      session_id: "sess-sandbox-2",
+      severity: "low",
+      sandbox_state: "active",
+      sandbox_version: "0.3.1",
+      sandbox_policy_enforced: true,
+    };
+    const finding = toDetectionFinding(entry);
+
+    // All fields are OCSF common fields, so unmapped should be undefined
+    assert.equal(finding.unmapped, undefined);
+  });
+
+  it("should filter null labels when sandbox_version and sandbox_policy_enforced are absent", () => {
+    const entry = {
+      hook: "sh-evidence",
+      decision: "allow",
+      event: "PostToolUse",
+      tool: "Bash",
+      sandbox_state: "active",
+    };
+    const finding = toDetectionFinding(entry);
+
+    // sandbox_state is "active", so container resource is added
+    assert.ok(finding.resources, "should have resources");
+    const container = finding.resources.find((r) => r.type === "container");
+    assert.ok(container, "should have container resource");
+    // Only "state:active" label should be present (null values filtered)
+    assert.deepEqual(container.labels, ["state:active"]);
+  });
+});

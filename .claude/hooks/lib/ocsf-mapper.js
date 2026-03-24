@@ -32,6 +32,9 @@ const OCSF_COMMON_FIELDS = new Set([
   "tool",
   "seq",
   "severity",
+  "sandbox_state",
+  "sandbox_version",
+  "sandbox_policy_enforced",
 ]);
 
 // ---------------------------------------------------------------------------
@@ -252,6 +255,20 @@ function toDetectionFinding(entry) {
   // Resources (tool name)
   if (entry.tool) {
     finding.resources = [{ type: "tool", name: entry.tool }];
+  }
+
+  // OpenShell sandbox metadata (Beta Phase)
+  if (entry.sandbox_state === "active") {
+    finding.resources = finding.resources || [];
+    finding.resources.push({
+      type: "container",
+      name: "openshell-sandbox",
+      labels: [
+        "state:" + entry.sandbox_state,
+        entry.sandbox_version ? "version:" + entry.sandbox_version : null,
+        entry.sandbox_policy_enforced ? "policy_enforced:true" : null,
+      ].filter(Boolean),
+    });
   }
 
   // Unmapped (hook-specific fields)

@@ -269,6 +269,10 @@ try {
           }
         : { available: false, reason: openshellResult.reason },
       session_id: input.sessionId,
+      sandbox_state: openshellResult.available ? "active" : "inactive",
+      sandbox_version: openshellResult.version || null,
+      sandbox_policy_enforced:
+        openshellResult.available && openshellResult.container_running,
       policy_compat: policyCompat
         ? {
             compatible: policyCompat.compatible,

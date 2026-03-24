@@ -111,6 +111,31 @@ Windows ネイティブでは Claude Code のサンドボックス機能（`sand
 
 ### Layer 3b: NVIDIA OpenShell（オプション）
 
+#### なぜ Layer 3b が必要か？
+
+Layer 1（permissions）と Layer 2（hooks）はツール呼び出しの入力テキスト（実行前のコマンド文字列）を検査します。しかし検査を通過したコマンドが実行されると、**OS 上の子プロセスは自由に動作します**。
+
+```
+Layer 1-2（プロセス内）:
+  Claude Code → [Hook が入力を検査] → コマンド実行 → [子プロセスは自由]
+                 ↑ ここしか制御できない
+
+Layer 3b（プロセス外 = カーネルレベル）:
+  Claude Code → コマンド実行 → [Landlock: ファイルアクセス制御]
+                                [Seccomp: syscall 制御]
+                                [Network NS: ネットワーク隔離]
+                ↑ 子プロセスも含めて全てカーネルが制御
+```
+
+| 攻撃ベクトル                         | Layer 1-2 の対処             | すり抜ける理由                        | Layer 3b の防御                       |
+| ------------------------------------ | ---------------------------- | ------------------------------------- | ------------------------------------- |
+| パイプチェーンによるファイル読み取り | パターンマッチング           | `awk`、`python -c` による間接アクセス | Landlock LSM がカーネルレベルで拒否   |
+| Raw ソケット通信                     | `curl`/`wget` の deny ルール | `python`/`node` でソケットを直接操作  | Seccomp BPF がソケット syscall を拒否 |
+| DNS トンネリング                     | sandbox.network（WSL2 のみ） | DNS クエリにデータを埋め込み          | Network Namespace が全 DNS を隔離     |
+| PowerShell ソケット                  | パターンマッチング           | エンコード・難読化                    | Seccomp BPF + Network NS の二重防御   |
+
+**構造的保証**: エージェント自身がガードレールを無効化することは**不可能** — ポリシーはコンテナ外に存在し、サンドボックス作成時にロックされます。
+
 [NVIDIA OpenShell](https://github.com/NVIDIA/OpenShell)（Apache 2.0）は Docker 上で AI エージェントに**カーネルレベルの隔離**を提供します:
 
 | メカニズム   | 対象             | 保護内容                |
