@@ -12,6 +12,7 @@ const {
   nfkcNormalize,
   normalizePath,
   appendEvidence,
+  trackDeny,
 } = require("./lib/sh-utils");
 
 // ---------------------------------------------------------------------------
@@ -324,7 +325,14 @@ if (require.main === module) {
         normalizedCommand,
         input.sessionId,
       );
-      deny(`[sh-gate] Blocked: ${match.label}`);
+      const tracker = trackDeny(`gate:${match.label}`);
+      if (tracker.exceeded) {
+        deny(
+          `[sh-gate] PROBING DETECTED: "${match.label}" denied ${tracker.count} times. User confirmation required.`,
+        );
+      } else {
+        deny(`[sh-gate] Blocked: ${match.label}`);
+      }
       return;
     }
 
