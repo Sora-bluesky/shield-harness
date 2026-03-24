@@ -16,6 +16,7 @@ const {
   appendEvidence,
 } = require("./lib/sh-utils");
 const { detectOpenShell } = require("./lib/openshell-detect");
+const { checkPolicyCompatibility } = require("./lib/policy-compat");
 
 const HOOK_NAME = "sh-session-start";
 const CLAUDE_MD = "CLAUDE.md";
@@ -168,6 +169,43 @@ try {
     );
   }
 
+  // 2d: Policy version compatibility check (TASK-021, ADR-037 Phase Beta)
+  let policyCompat = null;
+  if (openshellResult.available || openshellResult.version) {
+    try {
+      policyCompat = checkPolicyCompatibility({
+        openshellVersion: openshellResult.version,
+        policyFilePath: path.join(
+          ".claude",
+          "policies",
+          "openshell-default.yaml",
+        ),
+      });
+      session.policy_compat = policyCompat;
+      writeSession(session);
+
+      if (policyCompat.compatible === false) {
+        contextParts.push(
+          "[layer-3b] WARNING: Policy schema v" +
+            policyCompat.policy_version +
+            " incompatible with OpenShell v" +
+            policyCompat.openshell_version +
+            ". " +
+            (policyCompat.migration_hint || "Update your policy file."),
+        );
+      } else if (policyCompat.compatible === null && policyCompat.reason) {
+        contextParts.push(
+          "[layer-3b] Policy compatibility: unknown (" +
+            policyCompat.reason +
+            ")",
+        );
+      }
+      // compatible === true: normal operation, no extra message needed
+    } catch {
+      // fail-safe: compatibility check failure does not block session
+    }
+  }
+
   // --- Module 3: Version Check (§5.1.4) ---
   // Store baseline hashes for instructions monitoring
   const hashes = {};
@@ -207,6 +245,13 @@ try {
           }
         : { available: false, reason: openshellResult.reason },
       session_id: input.sessionId,
+      policy_compat: policyCompat
+        ? {
+            compatible: policyCompat.compatible,
+            policy_version: policyCompat.policy_version,
+            reason: policyCompat.reason,
+          }
+        : null,
     });
   } catch {
     // Evidence failure is non-blocking
