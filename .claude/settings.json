@@ -426,17 +426,27 @@
     "autoAllow": true,
     "allowUnsandboxedCommands": false,
     "filesystem": {
-      "allowWrite": ["."],
+      "allowWrite": [
+        "."
+      ],
       "denyWrite": [
         ".git",
         ".claude/hooks",
         ".claude/rules",
         ".claude/skills",
         ".claude/patterns",
+        ".claude/policies",
         ".shield-harness"
       ],
-      "denyRead": ["~/.ssh", "~/.aws", "~/.gnupg", "~/.config/gcloud"],
-      "allowRead": ["~/.shield-harness/patterns"]
+      "denyRead": [
+        "~/.ssh",
+        "~/.aws",
+        "~/.gnupg",
+        "~/.config/gcloud"
+      ],
+      "allowRead": [
+        "~/.shield-harness/patterns"
+      ]
     },
     "network": {
       "allowedDomains": []
