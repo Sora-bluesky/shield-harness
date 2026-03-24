@@ -1,6 +1,6 @@
 {
   "name": "shield-harness",
-  "version": "0.3.0",
+  "version": "0.4.0",
   "description": "Security harness for Claude Code — hooks-driven, zero-hassle defense",
   "bin": {
     "shield-harness": "./bin/shield-harness.js"

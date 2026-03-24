@@ -382,6 +382,8 @@
       "Write(.claude/settings.json)",
       "Write(.claude/settings.local.json)",
       "Write(.claude/permissions-spec.json)",
+      "Edit(.claude/policies/**)",
+      "Write(.claude/policies/**)",
       "Bash(rm -rf /)",
       "Bash(rm -rf ~)",
       "Bash(del /s /q C:\\\\)",

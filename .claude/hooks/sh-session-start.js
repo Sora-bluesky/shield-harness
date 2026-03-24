@@ -17,6 +17,7 @@ const {
 } = require("./lib/sh-utils");
 const { detectOpenShell } = require("./lib/openshell-detect");
 const { checkPolicyCompatibility } = require("./lib/policy-compat");
+const { checkPolicyDrift } = require("./lib/policy-drift");
 
 const HOOK_NAME = "sh-session-start";
 const CLAUDE_MD = "CLAUDE.md";
@@ -230,6 +231,38 @@ try {
     }
   }
 
+  // 2e: Policy drift check (ADR-037 GA Phase)
+  const POLICIES_DIR = path.join(".claude", "policies");
+  if (fs.existsSync(POLICIES_DIR)) {
+    try {
+      const driftResult = checkPolicyDrift({
+        specPath: PERM_SPEC_FILE,
+        policyDir: POLICIES_DIR,
+      });
+      session.policy_drift = driftResult;
+      writeSession(session);
+
+      if (driftResult.has_drift) {
+        contextParts.push(
+          `[layer-3b] WARNING: Policy drift detected — ${driftResult.warnings.length} issue(s) found`,
+        );
+        for (const warning of driftResult.warnings.slice(0, 3)) {
+          contextParts.push(`[layer-3b]   ${warning}`);
+        }
+        if (driftResult.warnings.length > 3) {
+          contextParts.push(
+            `[layer-3b]   ... and ${driftResult.warnings.length - 3} more`,
+          );
+        }
+        contextParts.push(
+          "[layer-3b] Run: npx shield-harness generate-policy to regenerate",
+        );
+      }
+    } catch {
+      // drift check failure is non-blocking
+    }
+  }
+
   // --- Module 3: Version Check (§5.1.4) ---
   // Store baseline hashes for instructions monitoring
   const hashes = {};
@@ -273,6 +306,14 @@ try {
       sandbox_version: openshellResult.version || null,
       sandbox_policy_enforced:
         openshellResult.available && openshellResult.container_running,
+      policy_drift: session.policy_drift
+        ? {
+            has_drift: session.policy_drift.has_drift,
+            warning_count: session.policy_drift.warnings
+              ? session.policy_drift.warnings.length
+              : 0,
+          }
+        : null,
       policy_compat: policyCompat
         ? {
             compatible: policyCompat.compatible,

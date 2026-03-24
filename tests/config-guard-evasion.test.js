@@ -9,6 +9,8 @@ const assert = require("node:assert/strict");
 const {
   extractSecurityFields,
   detectDangerousMutations,
+  countYamlListItems,
+  countNetworkEndpoints,
 } = require("../.claude/hooks/sh-config-guard.js");
 
 // ---------------------------------------------------------------------------
@@ -312,6 +314,251 @@ describe("detectDangerousMutations — edge cases", () => {
     // Should not throw, and should not block (no baseline to compare)
     const result = detectDangerousMutations(stored, current);
 
+    assert.equal(result.blocked, false);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// Test: YAML metric helpers (ADR-037 GA Phase)
+// ---------------------------------------------------------------------------
+
+describe("countYamlListItems — YAML section counting", () => {
+  it("should count items in deny_read section", () => {
+    const yaml = `filesystem_policy:
+  deny_read:
+    - ~/.ssh
+    - ~/.gnupg
+    - ~/.aws
+  read_only:
+    - /usr
+`;
+    assert.equal(countYamlListItems(yaml, "deny_read"), 3);
+  });
+
+  it("should return 0 for missing section", () => {
+    const yaml = `filesystem_policy:
+  read_only:
+    - /usr
+`;
+    assert.equal(countYamlListItems(yaml, "deny_read"), 0);
+  });
+
+  it("should count read_write items", () => {
+    const yaml = `filesystem_policy:
+  read_write:
+    - /sandbox
+    - /tmp
+`;
+    assert.equal(countYamlListItems(yaml, "read_write"), 2);
+  });
+});
+
+describe("countNetworkEndpoints — network host counting", () => {
+  it("should count host entries", () => {
+    const yaml = `network_policies:
+  api:
+    endpoints:
+      - host: api.anthropic.com
+        port: 443
+  github:
+    endpoints:
+      - host: github.com
+        port: 443
+      - host: "*.githubusercontent.com"
+        port: 443
+`;
+    assert.equal(countNetworkEndpoints(yaml), 3);
+  });
+
+  it("should return 0 when no hosts", () => {
+    assert.equal(countNetworkEndpoints("version: 1\n"), 0);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// Test: detectDangerousMutations — policy file tampering (Check 6, ADR-037 GA)
+// ---------------------------------------------------------------------------
+
+describe("detectDangerousMutations — OpenShell policy tampering", () => {
+  const baseConfig = {
+    deny_rules: ["rm -rf"],
+    hook_count: 1,
+    hook_events: ["PreToolUse"],
+    hook_commands: ["node .claude/hooks/sh-gate.js"],
+    sandbox: true,
+    unsandboxed: false,
+    disableAllHooks: false,
+  };
+
+  it("should detect policy file removal", () => {
+    const stored = {
+      ...baseConfig,
+      policy_hashes: {
+        ".claude/policies/openshell-default.yaml": "abc123",
+      },
+      policy_metrics: {
+        ".claude/policies/openshell-default.yaml": {
+          deny_read_count: 2,
+          deny_write_count: 1,
+          read_write_count: 2,
+          network_endpoint_count: 5,
+        },
+      },
+    };
+    const current = {
+      ...baseConfig,
+      policy_hashes: {},
+      policy_metrics: {},
+    };
+
+    const result = detectDangerousMutations(stored, current);
+    assert.equal(result.blocked, true);
+    assert.ok(result.reasons.some((r) => r.includes("policy file removed")));
+  });
+
+  it("should detect deny_read reduction (weakening)", () => {
+    const stored = {
+      ...baseConfig,
+      policy_hashes: { "pol.yaml": "hash1" },
+      policy_metrics: {
+        "pol.yaml": {
+          deny_read_count: 3,
+          deny_write_count: 1,
+          read_write_count: 2,
+          network_endpoint_count: 5,
+        },
+      },
+    };
+    const current = {
+      ...baseConfig,
+      policy_hashes: { "pol.yaml": "hash2" },
+      policy_metrics: {
+        "pol.yaml": {
+          deny_read_count: 1,
+          deny_write_count: 1,
+          read_write_count: 2,
+          network_endpoint_count: 5,
+        },
+      },
+    };
+
+    const result = detectDangerousMutations(stored, current);
+    assert.equal(result.blocked, true);
+    assert.ok(result.reasons.some((r) => r.includes("deny_read reduced")));
+  });
+
+  it("should detect network endpoint expansion (weakening)", () => {
+    const stored = {
+      ...baseConfig,
+      policy_hashes: { "pol.yaml": "hash1" },
+      policy_metrics: {
+        "pol.yaml": {
+          deny_read_count: 0,
+          deny_write_count: 0,
+          read_write_count: 2,
+          network_endpoint_count: 3,
+        },
+      },
+    };
+    const current = {
+      ...baseConfig,
+      policy_hashes: { "pol.yaml": "hash2" },
+      policy_metrics: {
+        "pol.yaml": {
+          deny_read_count: 0,
+          deny_write_count: 0,
+          read_write_count: 2,
+          network_endpoint_count: 7,
+        },
+      },
+    };
+
+    const result = detectDangerousMutations(stored, current);
+    assert.equal(result.blocked, true);
+    assert.ok(
+      result.reasons.some((r) => r.includes("network endpoints expanded")),
+    );
+  });
+
+  it("should detect read_write expansion (weakening)", () => {
+    const stored = {
+      ...baseConfig,
+      policy_hashes: { "pol.yaml": "hash1" },
+      policy_metrics: {
+        "pol.yaml": {
+          deny_read_count: 0,
+          deny_write_count: 0,
+          read_write_count: 2,
+          network_endpoint_count: 3,
+        },
+      },
+    };
+    const current = {
+      ...baseConfig,
+      policy_hashes: { "pol.yaml": "hash2" },
+      policy_metrics: {
+        "pol.yaml": {
+          deny_read_count: 0,
+          deny_write_count: 0,
+          read_write_count: 5,
+          network_endpoint_count: 3,
+        },
+      },
+    };
+
+    const result = detectDangerousMutations(stored, current);
+    assert.equal(result.blocked, true);
+    assert.ok(
+      result.reasons.some((r) => r.includes("read_write paths expanded")),
+    );
+  });
+
+  it("should allow policy strengthening (deny count increase)", () => {
+    const stored = {
+      ...baseConfig,
+      policy_hashes: { "pol.yaml": "hash1" },
+      policy_metrics: {
+        "pol.yaml": {
+          deny_read_count: 1,
+          deny_write_count: 1,
+          read_write_count: 2,
+          network_endpoint_count: 3,
+        },
+      },
+    };
+    const current = {
+      ...baseConfig,
+      policy_hashes: { "pol.yaml": "hash2" },
+      policy_metrics: {
+        "pol.yaml": {
+          deny_read_count: 3,
+          deny_write_count: 2,
+          read_write_count: 2,
+          network_endpoint_count: 3,
+        },
+      },
+    };
+
+    const result = detectDangerousMutations(stored, current);
+    assert.equal(result.blocked, false);
+  });
+
+  it("should skip policy checks when no stored policy hashes", () => {
+    const stored = { ...baseConfig };
+    const current = {
+      ...baseConfig,
+      policy_hashes: { "pol.yaml": "hash1" },
+      policy_metrics: {
+        "pol.yaml": {
+          deny_read_count: 0,
+          deny_write_count: 0,
+          read_write_count: 5,
+          network_endpoint_count: 10,
+        },
+      },
+    };
+
+    const result = detectDangerousMutations(stored, current);
     assert.equal(result.blocked, false);
   });
 });
