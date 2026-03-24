@@ -1,0 +1,440 @@
+{
+  "version": "1.0.0",
+  "profile": "standard",
+  "generated_from": "DETAILED_DESIGN.md §6 + §8.4",
+  "description": "Permissions SoT for shield-harness. Changes here must be reflected in settings.json. Protected by deny rules to prevent unauthorized modification.",
+  "permissions": {
+    "deny": [
+      {
+        "rule": "Read(~/.ssh/**)",
+        "rationale": "SSH key exfiltration prevention",
+        "threat_id": "T-01"
+      },
+      {
+        "rule": "Read(~/.aws/**)",
+        "rationale": "AWS credentials protection",
+        "threat_id": "T-01"
+      },
+      {
+        "rule": "Read(~/.gnupg/**)",
+        "rationale": "GPG key protection",
+        "threat_id": "T-01"
+      },
+      {
+        "rule": "Read(**/.env)",
+        "rationale": "Environment variable file protection",
+        "threat_id": "T-02"
+      },
+      {
+        "rule": "Read(**/.env.*)",
+        "rationale": "Environment variable file protection",
+        "threat_id": "T-02"
+      },
+      {
+        "rule": "Read(**/credentials*)",
+        "rationale": "Credential file protection",
+        "threat_id": "T-02"
+      },
+      {
+        "rule": "Edit(.claude/hooks/**)",
+        "rationale": "Hook tampering prevention",
+        "threat_id": "T-03"
+      },
+      {
+        "rule": "Edit(.claude/rules/**)",
+        "rationale": "Rule tampering prevention",
+        "threat_id": "T-03"
+      },
+      {
+        "rule": "Edit(.claude/skills/**)",
+        "rationale": "Skill tampering prevention",
+        "threat_id": "T-03"
+      },
+      {
+        "rule": "Edit(.claude/settings.json)",
+        "rationale": "Settings self-protection",
+        "threat_id": "T-03"
+      },
+      {
+        "rule": "Edit(.claude/permissions-spec.json)",
+        "rationale": "Permissions SoT self-protection",
+        "threat_id": "T-03"
+      },
+      {
+        "rule": "Write(.claude/hooks/**)",
+        "rationale": "Hook tampering prevention",
+        "threat_id": "T-03"
+      },
+      {
+        "rule": "Write(.claude/rules/**)",
+        "rationale": "Rule tampering prevention",
+        "threat_id": "T-03"
+      },
+      {
+        "rule": "Write(.claude/skills/**)",
+        "rationale": "Skill tampering prevention",
+        "threat_id": "T-03"
+      },
+      {
+        "rule": "Write(.claude/settings.json)",
+        "rationale": "Settings self-protection",
+        "threat_id": "T-03"
+      },
+      {
+        "rule": "Write(.claude/settings.local.json)",
+        "rationale": "Local settings protection",
+        "threat_id": "T-03"
+      },
+      {
+        "rule": "Write(.claude/permissions-spec.json)",
+        "rationale": "Permissions SoT self-protection",
+        "threat_id": "T-03"
+      },
+      {
+        "rule": "Bash(rm -rf /)",
+        "rationale": "System destruction prevention",
+        "threat_id": "T-04"
+      },
+      {
+        "rule": "Bash(rm -rf ~)",
+        "rationale": "Home directory destruction prevention",
+        "threat_id": "T-04"
+      },
+      {
+        "rule": "Bash(del /s /q C:\\\\)",
+        "rationale": "Windows system destruction prevention",
+        "threat_id": "T-04"
+      },
+      {
+        "rule": "Bash(format *)",
+        "rationale": "Disk format prevention",
+        "threat_id": "T-04"
+      },
+      {
+        "rule": "Bash(cat */.ssh/*)",
+        "rationale": "SSH key display prevention",
+        "threat_id": "T-01"
+      },
+      {
+        "rule": "Bash(type *\\\\.ssh\\\\*)",
+        "rationale": "Windows SSH key display prevention",
+        "threat_id": "T-01"
+      },
+      {
+        "rule": "Bash(curl *)",
+        "rationale": "Network isolation - data exfiltration prevention",
+        "threat_id": "T-05"
+      },
+      {
+        "rule": "Bash(wget *)",
+        "rationale": "Network isolation - data exfiltration prevention",
+        "threat_id": "T-05"
+      },
+      {
+        "rule": "Bash(Invoke-WebRequest *)",
+        "rationale": "Windows network isolation",
+        "threat_id": "T-05"
+      },
+      {
+        "rule": "Bash(nc *)",
+        "rationale": "Network reconnaissance prevention",
+        "threat_id": "T-05"
+      },
+      {
+        "rule": "Bash(ncat *)",
+        "rationale": "Network reconnaissance prevention",
+        "threat_id": "T-05"
+      },
+      {
+        "rule": "Bash(nmap *)",
+        "rationale": "Network scanning prevention",
+        "threat_id": "T-05"
+      },
+      {
+        "rule": "Bash(git push --force *)",
+        "rationale": "Force push prevention",
+        "threat_id": "T-06"
+      },
+      {
+        "rule": "Bash(npm publish *)",
+        "rationale": "Unauthorized package publication prevention",
+        "threat_id": "T-06"
+      },
+      {
+        "rule": "Edit(tasks/backlog.yaml)",
+        "rationale": "Backlog SoT protection (§8.4)",
+        "threat_id": "T-07"
+      },
+      {
+        "rule": "Write(tasks/backlog.yaml)",
+        "rationale": "Backlog SoT protection (§8.4)",
+        "threat_id": "T-07"
+      },
+      {
+        "rule": "Read(./**/*.pem)",
+        "rationale": "Certificate private key protection",
+        "threat_id": "T-02"
+      },
+      {
+        "rule": "Read(./**/*.key)",
+        "rationale": "Key file protection",
+        "threat_id": "T-02"
+      },
+      {
+        "rule": "Read(./**/*secret*)",
+        "rationale": "Secret file protection",
+        "threat_id": "T-02"
+      },
+      {
+        "rule": "Read(~/.config/gcloud/**)",
+        "rationale": "GCP credential protection",
+        "threat_id": "T-01"
+      },
+      {
+        "rule": "Edit(.shield-harness/**)",
+        "rationale": "Session data protection",
+        "threat_id": "T-03"
+      },
+      {
+        "rule": "Write(.shield-harness/**)",
+        "rationale": "Session data protection",
+        "threat_id": "T-03"
+      },
+      {
+        "rule": "Edit(.claude/patterns/**)",
+        "rationale": "Injection pattern protection",
+        "threat_id": "T-03"
+      },
+      {
+        "rule": "Write(.claude/patterns/**)",
+        "rationale": "Injection pattern protection",
+        "threat_id": "T-03"
+      }
+    ],
+    "ask": [
+      {
+        "rule": "Bash(git push *)",
+        "rationale": "Remote push requires confirmation",
+        "threat_id": "T-06"
+      },
+      {
+        "rule": "Edit(.claude/**)",
+        "rationale": "Config changes require confirmation",
+        "threat_id": "T-03"
+      },
+      {
+        "rule": "Bash(npm install *)",
+        "rationale": "Dependency changes require confirmation",
+        "threat_id": "T-08"
+      },
+      {
+        "rule": "Bash(npx *)",
+        "rationale": "Arbitrary package execution requires confirmation",
+        "threat_id": "T-08"
+      }
+    ],
+    "allow": [
+      {
+        "rule": "Bash(git status)",
+        "rationale": "Read-only git operation"
+      },
+      {
+        "rule": "Bash(git diff *)",
+        "rationale": "Read-only git operation"
+      },
+      {
+        "rule": "Bash(git log *)",
+        "rationale": "Read-only git operation"
+      },
+      {
+        "rule": "Bash(git branch *)",
+        "rationale": "Read-only git operation"
+      },
+      {
+        "rule": "Bash(git show *)",
+        "rationale": "Read-only git operation"
+      },
+      {
+        "rule": "Bash(git blame *)",
+        "rationale": "Read-only git operation"
+      },
+      {
+        "rule": "Bash(git stash list)",
+        "rationale": "Read-only git operation"
+      },
+      {
+        "rule": "Bash(git stash show *)",
+        "rationale": "Read-only git operation"
+      },
+      {
+        "rule": "Bash(npm test)",
+        "rationale": "Safe build/test operation"
+      },
+      {
+        "rule": "Bash(npm run *)",
+        "rationale": "Safe build/test operation"
+      },
+      {
+        "rule": "Bash(npm list *)",
+        "rationale": "Read-only npm operation"
+      },
+      {
+        "rule": "Bash(npm outdated)",
+        "rationale": "Read-only npm operation"
+      },
+      {
+        "rule": "Bash(npm audit *)",
+        "rationale": "Security audit operation"
+      },
+      {
+        "rule": "Bash(node --version)",
+        "rationale": "Version check"
+      },
+      {
+        "rule": "Bash(bun --version)",
+        "rationale": "Version check"
+      },
+      {
+        "rule": "Bash(python3 --version)",
+        "rationale": "Version check"
+      },
+      {
+        "rule": "Bash(ls *)",
+        "rationale": "Read-only filesystem operation"
+      },
+      {
+        "rule": "Bash(dir *)",
+        "rationale": "Windows read-only filesystem operation"
+      },
+      {
+        "rule": "Bash(cat *)",
+        "rationale": "Read-only file operation"
+      },
+      {
+        "rule": "Bash(head *)",
+        "rationale": "Read-only file operation"
+      },
+      {
+        "rule": "Bash(tail *)",
+        "rationale": "Read-only file operation"
+      },
+      {
+        "rule": "Bash(wc *)",
+        "rationale": "Read-only file operation"
+      },
+      {
+        "rule": "Bash(find *)",
+        "rationale": "Read-only filesystem operation"
+      },
+      {
+        "rule": "Bash(grep *)",
+        "rationale": "Read-only search operation"
+      },
+      {
+        "rule": "Bash(rg *)",
+        "rationale": "Read-only search operation"
+      },
+      {
+        "rule": "Bash(ag *)",
+        "rationale": "Read-only search operation"
+      },
+      {
+        "rule": "Bash(which *)",
+        "rationale": "Read-only command lookup"
+      },
+      {
+        "rule": "Bash(type *)",
+        "rationale": "Read-only command lookup"
+      },
+      {
+        "rule": "Bash(file *)",
+        "rationale": "Read-only file type detection"
+      },
+      {
+        "rule": "Bash(pwd)",
+        "rationale": "Read-only directory info"
+      },
+      {
+        "rule": "Bash(whoami)",
+        "rationale": "Read-only user info"
+      },
+      {
+        "rule": "Bash(date)",
+        "rationale": "Read-only system info"
+      },
+      {
+        "rule": "Bash(uname *)",
+        "rationale": "Read-only system info"
+      },
+      {
+        "rule": "Bash(echo *)",
+        "rationale": "Safe output operation"
+      },
+      {
+        "rule": "Bash(jq *)",
+        "rationale": "Read-only JSON processing"
+      },
+      {
+        "rule": "Bash(sed *)",
+        "rationale": "Text processing"
+      },
+      {
+        "rule": "Bash(awk *)",
+        "rationale": "Text processing"
+      },
+      {
+        "rule": "Bash(sort *)",
+        "rationale": "Read-only text operation"
+      },
+      {
+        "rule": "Bash(uniq *)",
+        "rationale": "Read-only text operation"
+      },
+      {
+        "rule": "Read(**)",
+        "rationale": "Full read access (deny rules exclude sensitive paths)"
+      },
+      {
+        "rule": "Glob(*)",
+        "rationale": "Read-only filesystem search"
+      },
+      {
+        "rule": "Grep(*)",
+        "rationale": "Read-only content search"
+      },
+      {
+        "rule": "WebSearch(*)",
+        "rationale": "Read-only web search"
+      },
+      {
+        "rule": "WebFetch(*)",
+        "rationale": "Read-only web fetch"
+      },
+      {
+        "rule": "Task(*)",
+        "rationale": "Internal task management"
+      },
+      {
+        "rule": "Skill(*)",
+        "rationale": "Internal skill execution"
+      },
+      {
+        "rule": "TodoWrite(*)",
+        "rationale": "Internal todo management"
+      },
+      {
+        "rule": "Bash(diff *)",
+        "rationale": "Read-only file comparison"
+      },
+      {
+        "rule": "Bash(tree *)",
+        "rationale": "Read-only directory view"
+      }
+    ]
+  },
+  "expected_counts": {
+    "deny": 41,
+    "ask": 4,
+    "allow": 49
+  }
+}

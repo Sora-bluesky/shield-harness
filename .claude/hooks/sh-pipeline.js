@@ -318,6 +318,42 @@ try {
           }
         }
 
+        // Permissions alignment gate (permanent countermeasure — Requirement 1: Hard Gate)
+        const PERM_SPEC_FILE = path.join(".claude", "permissions-spec.json");
+        if (fs.existsSync(PERM_SPEC_FILE)) {
+          try {
+            const {
+              validateAlignment,
+            } = require("./lib/permissions-validator");
+            const alignResult = validateAlignment(
+              PERM_SPEC_FILE,
+              path.join(".claude", "settings.json"),
+            );
+            if (!alignResult.aligned) {
+              updateBacklog(taskId, {
+                stage_status: "stg2_blocked",
+                stg_history_push: {
+                  gate: "stg2_blocked",
+                  passed_at: timestamp,
+                  reason: "permissions_divergence",
+                },
+              });
+              appendEvidence({
+                hook: HOOK_NAME,
+                action: "stg2_blocked",
+                reason: "permissions_divergence",
+                diff_summary: alignResult.summary,
+              });
+              summary = `STG2 BLOCKED: permissions divergence — ${alignResult.summary}`;
+              break;
+            }
+          } catch (err) {
+            // fail-close: validation error also blocks STG2
+            summary = `STG2 BLOCKED: permissions check error — ${err.message}`;
+            break;
+          }
+        }
+
         // Update backlog
         updateBacklog(taskId, {
           stage_status: "stg2_passed",
