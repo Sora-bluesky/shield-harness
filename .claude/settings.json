@@ -418,5 +418,35 @@
     "EDITOR": "code --wait",
     "CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS": "1",
     "CLAUDE_CODE_SUBAGENT_MODEL": "claude-opus-4-6"
+  },
+  "sandbox": {
+    "enabled": true,
+    "autoAllow": true,
+    "allowUnsandboxedCommands": false,
+    "filesystem": {
+      "allowWrite": [
+        "."
+      ],
+      "denyWrite": [
+        ".git",
+        ".claude/hooks",
+        ".claude/rules",
+        ".claude/skills",
+        ".claude/patterns",
+        ".shield-harness"
+      ],
+      "denyRead": [
+        "~/.ssh",
+        "~/.aws",
+        "~/.gnupg",
+        "~/.config/gcloud"
+      ],
+      "allowRead": [
+        "~/.shield-harness/patterns"
+      ]
+    },
+    "network": {
+      "allowedDomains": []
+    }
   }
 }
