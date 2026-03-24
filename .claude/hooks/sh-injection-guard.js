@@ -13,6 +13,7 @@ const {
   nfkcNormalize,
   loadPatterns,
   appendEvidence,
+  trackDeny,
 } = require("./lib/sh-utils");
 
 // Zero-width character regex (checked BEFORE pattern matching to prevent bypass)
@@ -92,11 +93,20 @@ if (require.main === module) {
         detail: "Zero-width character detected in raw input",
         session_id: sessionId,
       });
-      deny(
-        "[sh-injection-guard] Zero-width character detected. " +
-          "Invisible characters can be used to bypass security patterns. " +
-          "Category: zero_width (severity: high)",
-      );
+      const zwTracker = trackDeny("injection:zero_width");
+      if (zwTracker.exceeded) {
+        deny(
+          "[sh-injection-guard] PROBING DETECTED: zero_width denied " +
+            zwTracker.count +
+            " times. User confirmation required.",
+        );
+      } else {
+        deny(
+          "[sh-injection-guard] Zero-width character detected. " +
+            "Invisible characters can be used to bypass security patterns. " +
+            "Category: zero_width (severity: high)",
+        );
+      }
       return;
     }
 
@@ -140,11 +150,20 @@ if (require.main === module) {
               pattern: patternStr,
               session_id: sessionId,
             });
-            deny(
-              `[sh-injection-guard] Injection pattern detected. ` +
-                `Category: ${categoryName} (severity: ${severity}). ` +
-                `Description: ${category.description || "N/A"}`,
+            const patternTracker = trackDeny(
+              `injection:${categoryName}:${patternStr}`,
             );
+            if (patternTracker.exceeded) {
+              deny(
+                `[sh-injection-guard] PROBING DETECTED: ${categoryName} denied ${patternTracker.count} times. User confirmation required.`,
+              );
+            } else {
+              deny(
+                `[sh-injection-guard] Injection pattern detected. ` +
+                  `Category: ${categoryName} (severity: ${severity}). ` +
+                  `Description: ${category.description || "N/A"}`,
+              );
+            }
             return;
           }
 

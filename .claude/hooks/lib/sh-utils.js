@@ -306,6 +306,25 @@ function loadPatterns() {
   }
 }
 
+// --- Repeat Deny Tracking (§4.5 FR-04-07) ---
+
+const REPEAT_DENY_THRESHOLD = 3;
+
+/**
+ * Track deny occurrences per pattern key in session.
+ * Increments deny_tracker[patternKey] in session.json.
+ * @param {string} patternKey - Identifier for the denied pattern
+ * @returns {{ exceeded: boolean, count: number }}
+ */
+function trackDeny(patternKey) {
+  const session = readSession();
+  if (!session.deny_tracker) session.deny_tracker = {};
+  const count = (session.deny_tracker[patternKey] || 0) + 1;
+  session.deny_tracker[patternKey] = count;
+  writeSession(session);
+  return { exceeded: count >= REPEAT_DENY_THRESHOLD, count };
+}
+
 module.exports = {
   // Constants
   SH_DIR,
@@ -337,4 +356,7 @@ module.exports = {
   loadPatterns,
   // Hash Chain
   verifyHashChain,
+  // Deny Tracking
+  trackDeny,
+  REPEAT_DENY_THRESHOLD,
 };

@@ -160,6 +160,7 @@ try {
   session.session_start = new Date().toISOString();
   session.retry_count = 0;
   session.stop_hook_active = false;
+  session.deny_tracker = {};
   contextParts.push("[env-check] Session initialized, token budget set");
 
   // 2c: OpenShell detection (Layer 3b, ADR-037)
