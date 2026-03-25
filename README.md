@@ -4,7 +4,7 @@
 
 **Hook-driven auto-defense security harness for Claude Code**
 
-> **v0.4.0**: 22 hooks, 4-layer defense (L1 Permissions + L2 Hooks + L3 Sandbox + L3b OpenShell), 391 tests including 108 OWASP AITG attack simulation tests.
+> **v0.5.0**: 22 hooks, 4-layer defense (L1 Permissions + L2 Hooks + L3 Sandbox + L3b OpenShell), 426 tests including 108 OWASP AITG attack simulations + 35 Auto Mode defense tests.
 
 [![English](https://img.shields.io/badge/lang-English-blue?style=flat-square)](#)
 [![日本語](https://img.shields.io/badge/lang-日本語-red?style=flat-square)](README.ja.md)
@@ -50,30 +50,30 @@ npx shield-harness init [--profile minimal|standard|strict]
 
 ## Hook Catalog
 
-| #   | Hook             | Event                 | Responsibility                                                |
-| --- | ---------------- | --------------------- | ------------------------------------------------------------- |
-| 1   | permission       | PreToolUse            | 4-category tool usage classification                          |
-| 2   | gate             | PreToolUse            | 7 attack vector inspection for Bash commands                  |
-| 3   | injection-guard  | PreToolUse            | 9-category 50+ pattern injection detection                    |
-| 4   | data-boundary    | PreToolUse            | Production data boundary + jurisdiction tracking              |
-| 5   | quiet-inject     | PreToolUse            | Auto-inject quiet flags                                       |
-| 6   | evidence         | PostToolUse           | SHA-256 hash chain evidence                                   |
-| 7   | output-control   | PostToolUse           | Output truncation + token budget                              |
-| 8   | dep-audit        | PostToolUse           | Package install detection                                     |
-| 9   | lint-on-save     | PostToolUse           | Auto lint execution                                           |
-| 10  | session-start    | SessionStart          | Session init + integrity baseline                             |
-| 11  | session-end      | SessionEnd            | Cleanup + statistics                                          |
-| 12  | circuit-breaker  | Stop                  | Retry limit (3 attempts)                                      |
-| 13  | config-guard     | ConfigChange          | Settings change monitoring + OpenShell policy file protection |
-| 14  | user-prompt      | UserPromptSubmit      | User input injection scanning                                 |
-| 15  | permission-learn | PermissionRequest     | Permission learning guard                                     |
-| 16  | elicitation      | Elicitation           | Phishing + scope guard                                        |
-| 17  | subagent         | SubagentStart         | Subagent budget constraint (25%)                              |
-| 18  | instructions     | InstructionsLoaded    | Rule file integrity monitoring                                |
-| 19  | precompact       | PreCompact            | Pre-compaction backup                                         |
-| 20  | postcompact      | PostCompact           | Post-compaction restore + verify                              |
-| 21  | worktree         | WorktreeCreate/Remove | Security propagation + evidence merge                         |
-| 22  | task-gate        | TaskCompleted         | Test gate                                                     |
+| #   | Hook             | Event                 | Responsibility                                                                       |
+| --- | ---------------- | --------------------- | ------------------------------------------------------------------------------------ |
+| 1   | permission       | PreToolUse            | 4-category tool usage classification                                                 |
+| 2   | gate             | PreToolUse            | 7 attack vector inspection for Bash commands                                         |
+| 3   | injection-guard  | PreToolUse            | 9-category 50+ pattern injection detection                                           |
+| 4   | data-boundary    | PreToolUse            | Production data boundary + jurisdiction tracking                                     |
+| 5   | quiet-inject     | PreToolUse            | Auto-inject quiet flags                                                              |
+| 6   | evidence         | PostToolUse           | SHA-256 hash chain evidence                                                          |
+| 7   | output-control   | PostToolUse           | Output truncation + token budget                                                     |
+| 8   | dep-audit        | PostToolUse           | Package install detection                                                            |
+| 9   | lint-on-save     | PostToolUse           | Auto lint execution                                                                  |
+| 10  | session-start    | SessionStart          | Session init + integrity baseline                                                    |
+| 11  | session-end      | SessionEnd            | Cleanup + statistics                                                                 |
+| 12  | circuit-breaker  | Stop                  | Retry limit (3 attempts)                                                             |
+| 13  | config-guard     | ConfigChange          | Settings change monitoring + OpenShell policy file protection + Auto Mode protection |
+| 14  | user-prompt      | UserPromptSubmit      | User input injection scanning                                                        |
+| 15  | permission-learn | PermissionRequest     | Permission learning guard                                                            |
+| 16  | elicitation      | Elicitation           | Phishing + scope guard                                                               |
+| 17  | subagent         | SubagentStart         | Subagent budget constraint (25%)                                                     |
+| 18  | instructions     | InstructionsLoaded    | Rule file integrity monitoring                                                       |
+| 19  | precompact       | PreCompact            | Pre-compaction backup                                                                |
+| 20  | postcompact      | PostCompact           | Post-compaction restore + verify                                                     |
+| 21  | worktree         | WorktreeCreate/Remove | Security propagation + evidence merge                                                |
+| 22  | task-gate        | TaskCompleted         | Test gate                                                                            |
 
 ## Pipeline
 
@@ -187,14 +187,14 @@ Policy files are protected by:
 ## Testing
 
 ```bash
-# Run all tests (391 tests including 108 OWASP AITG attack simulations)
+# Run all tests (426 tests including attack simulations)
 npm test
 
 # Run attack simulation tests only
 node --test tests/attack-sim-*.test.js
 ```
 
-| Test Suite                    | OWASP Category                         | Tests |
+| Test Suite                    | Category                               | Tests |
 | ----------------------------- | -------------------------------------- | ----- |
 | attack-sim-prompt-injection   | AITG-APP-01: Direct Prompt Injection   | 25    |
 | attack-sim-indirect-injection | AITG-APP-02: Indirect Prompt Injection | 18    |
@@ -202,6 +202,19 @@ node --test tests/attack-sim-*.test.js
 | attack-sim-agentic-limits     | AITG-APP-06: Agentic Behavior Limits   | 18    |
 | attack-sim-sandbox-escape     | NVIDIA 3-axis: Sandbox Escape          | 15    |
 | attack-sim-defense-chain      | SAIF: Defense-in-depth Chain           | 12    |
+| attack-sim-automode-bypass    | Auto Mode: soft_deny/soft_allow bypass | 15    |
+
+## Auto Mode Awareness (v0.5.0)
+
+Shield Harness detects Claude Code's Auto Mode (Research Preview) configuration at session start and protects against dangerous settings:
+
+| Setting                | Risk                                                       | Shield Harness Response                                              |
+| ---------------------- | ---------------------------------------------------------- | -------------------------------------------------------------------- |
+| `autoMode.soft_deny`   | **CRITICAL** — disables all classifier default protections | Config-guard blocks addition; session-start outputs CRITICAL warning |
+| `autoMode.soft_allow`  | WARN — auto-approves specific tools                        | Config-guard blocks expansion; session-start outputs WARNING         |
+| `autoMode.environment` | Safe — informational only                                  | Detected and recorded in session                                     |
+
+All existing hooks (PreToolUse, PostToolUse) fire normally under Auto Mode — `permissions.deny` rules remain absolute. Auto Mode's classifier cannot override hook denials.
 
 ## Channel Integration
 

@@ -18,6 +18,7 @@ const {
 const { detectOpenShell } = require("./lib/openshell-detect");
 const { checkPolicyCompatibility } = require("./lib/policy-compat");
 const { checkPolicyDrift } = require("./lib/policy-drift");
+const { detectAutoMode } = require("./lib/automode-detect");
 
 const HOOK_NAME = "sh-session-start";
 const CLAUDE_MD = "CLAUDE.md";
@@ -263,6 +264,39 @@ try {
     }
   }
 
+  // 2f: Auto Mode detection (Phase 7, ADR-038)
+  let autoModeResult = null;
+  try {
+    autoModeResult = detectAutoMode();
+    session.auto_mode = autoModeResult;
+    writeSession(session);
+
+    if (autoModeResult.danger_level === "critical") {
+      contextParts.push(
+        `[auto-mode] CRITICAL: Auto Mode soft_deny detected (${autoModeResult.soft_deny_count} rules) — ALL default protections lost`,
+      );
+      for (const item of autoModeResult.danger_items.slice(0, 3)) {
+        contextParts.push(`[auto-mode]   Lost: ${item}`);
+      }
+      if (autoModeResult.danger_items.length > 3) {
+        contextParts.push(
+          `[auto-mode]   ... and ${autoModeResult.danger_items.length - 3} more protections lost`,
+        );
+      }
+    } else if (autoModeResult.danger_level === "warn") {
+      contextParts.push(
+        `[auto-mode] WARNING: Auto Mode soft_allow detected — ${autoModeResult.soft_allow_count} rules auto-approved`,
+      );
+    } else if (autoModeResult.detected) {
+      contextParts.push("[auto-mode] Auto Mode configured (safe)");
+    } else {
+      contextParts.push("[auto-mode] Auto Mode: not configured");
+    }
+  } catch {
+    // Auto Mode detection failure is non-blocking
+    contextParts.push("[auto-mode] Auto Mode detection error (non-blocking)");
+  }
+
   // --- Module 3: Version Check (§5.1.4) ---
   // Store baseline hashes for instructions monitoring
   const hashes = {};
@@ -312,6 +346,14 @@ try {
             warning_count: session.policy_drift.warnings
               ? session.policy_drift.warnings.length
               : 0,
+          }
+        : null,
+      auto_mode: autoModeResult
+        ? {
+            detected: autoModeResult.detected,
+            danger_level: autoModeResult.danger_level,
+            soft_deny_count: autoModeResult.soft_deny_count,
+            soft_allow_count: autoModeResult.soft_allow_count,
           }
         : null,
       policy_compat: policyCompat

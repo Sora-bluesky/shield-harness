@@ -1,6 +1,6 @@
 {
   "name": "shield-harness",
-  "version": "0.4.0",
+  "version": "0.5.0",
   "description": "Security harness for Claude Code — hooks-driven, zero-hassle defense",
   "bin": {
     "shield-harness": "./bin/shield-harness.js"
@@ -27,7 +27,10 @@
     "test:openshell-detect": "node --test tests/openshell-detect.test.js",
     "test:openshell-evidence": "node --test tests/openshell-evidence.test.js",
     "test:tier-policy": "node --test tests/tier-policy-gen.test.js",
-    "test:policy-effectiveness": "node --test tests/policy-effectiveness.test.js"
+    "test:policy-effectiveness": "node --test tests/policy-effectiveness.test.js",
+    "test:automode": "node --test tests/automode-detect.test.js",
+    "test:automode-guard": "node --test tests/config-guard-automode.test.js",
+    "test:attack-automode": "node --test tests/attack-sim-automode-bypass.test.js"
   },
   "keywords": [
     "claude-code",

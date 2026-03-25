@@ -14,11 +14,15 @@ const {
   sha256,
   appendEvidence,
 } = require("./lib/sh-utils");
+const {
+  readSettingsFile: readAutoModeSection,
+} = require("./lib/automode-detect");
 
 const HOOK_NAME = "sh-config-guard";
 const SETTINGS_FILE = path.join(".claude", "settings.json");
 const CONFIG_HASH_FILE = path.join(".claude", "logs", "config-hash.json");
 const POLICIES_DIR = path.join(".claude", "policies");
+const SETTINGS_LOCAL = path.join(".claude", "settings.local.json");
 
 // ---------------------------------------------------------------------------
 // Config Analysis
@@ -171,7 +175,7 @@ function extractSecurityFields(settings) {
     }
   }
 
-  return {
+  const result = {
     deny_rules: denyRules,
     hook_count: hookCount,
     hook_events: hookEvents,
@@ -184,7 +188,33 @@ function extractSecurityFields(settings) {
     disableAllHooks: Boolean(settings.disableAllHooks),
     policy_hashes: extractPolicyHashes(),
     policy_metrics: extractPolicyMetrics(),
+    soft_deny_count: 0,
+    soft_allow_count: 0,
   };
+
+  // Auto Mode: read autoMode from both settings files (Phase 7, ADR-038)
+  try {
+    const mainAutoMode = readAutoModeSection(SETTINGS_FILE);
+    const localAutoMode = readAutoModeSection(SETTINGS_LOCAL);
+    const softDeny = [
+      ...new Set([
+        ...(mainAutoMode ? mainAutoMode.soft_deny : []),
+        ...(localAutoMode ? localAutoMode.soft_deny : []),
+      ]),
+    ];
+    const softAllow = [
+      ...new Set([
+        ...(mainAutoMode ? mainAutoMode.soft_allow : []),
+        ...(localAutoMode ? localAutoMode.soft_allow : []),
+      ]),
+    ];
+    result.soft_deny_count = softDeny.length;
+    result.soft_allow_count = softAllow.length;
+  } catch {
+    // Auto Mode detection failure is non-blocking for config-guard
+  }
+
+  return result;
 }
 
 /**
@@ -284,6 +314,24 @@ function detectDangerousMutations(stored, current) {
         );
       }
     }
+  }
+
+  // Check 7: Auto Mode soft_deny addition (CRITICAL — all default protections lost)
+  const storedSoftDeny = stored.soft_deny_count || 0;
+  const currentSoftDeny = current.soft_deny_count || 0;
+  if (currentSoftDeny > storedSoftDeny) {
+    reasons.push(
+      `Auto Mode soft_deny added (${storedSoftDeny} → ${currentSoftDeny}) — ALL default protections would be lost`,
+    );
+  }
+
+  // Check 8: Auto Mode soft_allow expansion
+  const storedSoftAllow = stored.soft_allow_count || 0;
+  const currentSoftAllow = current.soft_allow_count || 0;
+  if (currentSoftAllow > storedSoftAllow) {
+    reasons.push(
+      `Auto Mode soft_allow expanded (${storedSoftAllow} → ${currentSoftAllow}) — additional tools auto-approved`,
+    );
   }
 
   return {

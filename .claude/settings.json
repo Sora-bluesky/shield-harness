@@ -381,6 +381,7 @@
       "Write(.claude/skills/**)",
       "Write(.claude/settings.json)",
       "Write(.claude/settings.local.json)",
+      "Edit(.claude/settings.local.json)",
       "Write(.claude/permissions-spec.json)",
       "Edit(.claude/policies/**)",
       "Write(.claude/policies/**)",
@@ -426,9 +427,7 @@
     "autoAllow": true,
     "allowUnsandboxedCommands": false,
     "filesystem": {
-      "allowWrite": [
-        "."
-      ],
+      "allowWrite": ["."],
       "denyWrite": [
         ".git",
         ".claude/hooks",
@@ -438,15 +437,8 @@
         ".claude/policies",
         ".shield-harness"
       ],
-      "denyRead": [
-        "~/.ssh",
-        "~/.aws",
-        "~/.gnupg",
-        "~/.config/gcloud"
-      ],
-      "allowRead": [
-        "~/.shield-harness/patterns"
-      ]
+      "denyRead": ["~/.ssh", "~/.aws", "~/.gnupg", "~/.config/gcloud"],
+      "allowRead": ["~/.shield-harness/patterns"]
     },
     "network": {
       "allowedDomains": []

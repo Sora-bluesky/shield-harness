@@ -86,6 +86,11 @@
         "threat_id": "T-03"
       },
       {
+        "rule": "Edit(.claude/settings.local.json)",
+        "rationale": "Local settings protection — Auto Mode injection prevention (Phase 7, ADR-038)",
+        "threat_id": "T-03"
+      },
+      {
         "rule": "Write(.claude/permissions-spec.json)",
         "rationale": "Permissions SoT self-protection",
         "threat_id": "T-03"
@@ -443,7 +448,7 @@
     ]
   },
   "expected_counts": {
-    "deny": 43,
+    "deny": 44,
     "ask": 4,
     "allow": 49
   }
